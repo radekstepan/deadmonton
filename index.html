@@ -6,11 +6,34 @@
     <script type="text/javascript" src="vendor/js/async.js"></script>
     <script type="text/javascript" src="vendor/js/lodash.js"></script>
     <script type="text/javascript" src="vendor/js/superagent.js"></script>
+    <script type="text/javascript" src="vendor/js/leaflet.js"></script>
     <script type="text/javascript" src="vendor/js/coffeescript.js"></script>
 
     <link rel="stylesheet" type="text/css" href="vendor/css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="vendor/css/leaflet.css">
+
+    <style>
+        html, body {
+            height: 100%;
+        }
+        #canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+        .point {
+            position: absolute;
+            border-radius: 50%;
+            width: 10px;
+            height: 10px;
+            background: black;
+        }
+    </style>
 </head>
 <body>
+    <div id="map"></div>
+    <canvas id="canvas"></canvas>
     <script type="text/coffeescript" src="app.coffee"></script>
 </body>
 </html>
