@@ -1,2 +1,0 @@
-defmodule Deadmonton do
-end
