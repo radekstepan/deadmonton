@@ -1,4 +1,5 @@
 # deadmonton
+*in progress*
 
 Aggregate crime stats from [Edmonton Police Service](http://crimemapping.edmontonpolice.ca/) and visualize on an [OpenStreet](http://www.openstreetmap.org) map.
 
