@@ -15,28 +15,15 @@ colors =
 # Set available area for map & canvas.
 { width, height } = document.querySelector('body').getBoundingClientRect()
 
-el = document.querySelector('#map')
-el.style.width = "#{width}px"
-el.style.height = "#{height}px"
-
-el = document.querySelector('#canvas')
-el.width = width
-el.height = height
+$('#map').css('width', "#{width}px").css('height', "#{height}px")
+$('#canvas').attr('width', width).attr('height', height)
 
 canvas = document.getElementById("canvas")
 ctx = canvas.getContext("2d")
 
 # Get the data.
-superagent.get 'data/crime.json', (res) ->
-    # Filter the set.
-    # res.body = _.filter res.body, { 'type': 'Theft Over $5000' }
-
-    # Show Edmonton.
-    # map = L.map('map').setView([ 53.5501, -113.5049 ], 12);
-    # L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-    #     attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-    # }).addTo(map)
-    
+$.getJSON 'data/crime.json', (data) ->
+    # Center on Edmonton.    
     map = new L.Map 'map',
         'center': new L.LatLng(53.5501, -113.5049),
         'zoom': 12
@@ -46,12 +33,12 @@ superagent.get 'data/crime.json', (res) ->
     particles = []
 
     # The time range.
-    a = moment new Date res.body[0].date
-    b = moment new Date res.body[res.body.length - 1].date
+    a = moment new Date data[0].date
+    b = moment new Date data[data.length - 1].date
 
     diff = b.diff a, 'days'
 
-    date = document.querySelector('#date')
+    date = $('#date')
 
     # Range replay.
     i1 = setInterval ->
@@ -60,13 +47,14 @@ superagent.get 'data/crime.json', (res) ->
         return ( clearInterval(i) for i in [ i1, i2 ] ) if a > b
 
         # Show the new date.
-        date.innerHTML = a.format("ddd, Do MMMM YYYY")
+        date.html a.format("ddd, Do MMMM YYYY")
 
         # Shift today's events from the queue.
         go = yes
-        while go and res.body.length
-            if a >= new Date res.body[0].date
-                particle = do res.body.shift
+        while go and data.length
+            # Peak.
+            if a >= new Date data[0].date
+                particle = do data.shift
                 # How many ticks do I live for?
                 particle.ttl = 10
                 # Save the particle location.
