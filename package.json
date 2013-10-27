@@ -1,0 +1,20 @@
+{
+    "name": "deadmonton",
+    "version": "0.0.0",
+    "description": "Visualizing crime in Edmonton",
+    "dependencies": {
+        "async": "~0.2.9",
+        "request": "~2.27.0",
+        "lodash": "~2.2.1",
+        "moment": "~2.3.1"
+    },
+    "devDependencies": {
+        "grunt": "~0.4.1",
+        "grunt-coffee-build": "~1.4.12"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/radekstepan/deadmonton.git"
+    },
+    "author": "Radek <dev@radekstepan.com>"
+}

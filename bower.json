@@ -1,0 +1,13 @@
+{
+    "name": "deadmonton",
+    "version": "0.0.0",
+    "dependencies": {
+        "async": null,
+        "jquery": null,
+        "leaflet-dist": null,
+        "leaflet-providers": null,
+        "lodash": null,
+        "moment": null,
+        "normalize-css": null
+    }
+}

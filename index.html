@@ -5,16 +5,17 @@
     
     <title>Welcome to Deadmonton</title>
 
-    <script type="text/javascript" src="vendor/js/async.js"></script>
-    <script type="text/javascript" src="vendor/js/lodash.js"></script>
-    <script type="text/javascript" src="vendor/js/jquery.js"></script>
-    <script type="text/javascript" src="vendor/js/leaflet.js"></script>
-    <script type="text/javascript" src="vendor/js/leaflet.stamen.js"></script>    
-    <script type="text/javascript" src="vendor/js/moment.js"></script>
-    <script type="text/javascript" src="vendor/js/coffeescript.js"></script>
+    <script src="vendor/async/lib/async.js"></script>
+    <script src="vendor/jquery/jquery.min.js"></script>
+    <script src="vendor/leaflet-dist/leaflet.js"></script>
+    <script src="vendor/leaflet-providers/leaflet-providers.js"></script>    
+    <script src="vendor/lodash/dist/lodash.min.js"></script>
+    <script src="vendor/moment/min/moment.min.js"></script>
 
-    <link rel="stylesheet" type="text/css" href="vendor/css/normalize.css">
-    <link rel="stylesheet" type="text/css" href="vendor/css/leaflet.css">
+    <script src="build/browser.js"></script>
+
+    <link rel="stylesheet" type="text/css" href="vendor/normalize-css/normalize.css">
+    <link rel="stylesheet" type="text/css" href="vendor/leaflet-dist/leaflet.css">
 
     <style>
         html, body {
@@ -25,22 +26,58 @@
             top: 0;
             left: 0;
         }
-        #date {
+        .box {
             position: absolute;
-            top: 10px;
-            right: 0;
             z-index: 2;
             padding: 2px 4px;
             color: #333;
+            background: rgba(255, 255, 255, 0.7);
+            box-shadow: 0 0 5px #BBB;
+        }
+        #controls {
+            top: 0;
+            left: 0;
+        }
+        #date {
+            top: 0;
+            right: 0;
             font-size: 20px;
-            background: rgba(255, 255, 255, 0.7)
+        }
+        .icon {
+            opacity: 0.5;
+            width: 32px;
+            height: 32px;
+            display: inline-block;
+        }
+        .icon.active {
+            opacity: 1;
+            cursor: pointer;
+        }
+        .icon.pause {
+            background-image: url('vendor/img/pause.png');
+        }
+        .icon.pin {
+            background-image: url('vendor/img/pin.png');
+        }
+        .icon.play {
+            background-image: url('vendor/img/play.png');
+        }
+        .icon.rewind {
+            background-image: url('vendor/img/rewind.png');
+        }
+        .icon.zoom {
+            background-image: url('vendor/img/zoom.png');
         }
     </style>
 </head>
 <body>
     <div id="map"></div>
     <canvas id="canvas"></canvas>
-    <div id="date"></div>
-    <script type="text/coffeescript" src="app.coffee"></script>
+    <div id="controls" class="box">
+        <span class="icon rewind"></span>
+        <span class="icon play"></span>
+        <span class="icon pause"></span>
+    </div>
+    <div id="date" class="box"></div>
 </body>
 </html>
