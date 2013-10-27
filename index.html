@@ -12,63 +12,12 @@
     <script src="vendor/lodash/dist/lodash.min.js"></script>
     <script src="vendor/moment/min/moment.min.js"></script>
 
-    <script src="build/browser.js"></script>
+    <script src="build/app.js"></script>
 
     <link rel="stylesheet" type="text/css" href="vendor/normalize-css/normalize.css">
     <link rel="stylesheet" type="text/css" href="vendor/leaflet-dist/leaflet.css">
 
-    <style>
-        html, body {
-            height: 100%;
-        }
-        #canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-        .box {
-            position: absolute;
-            z-index: 2;
-            padding: 2px 4px;
-            color: #333;
-            background: rgba(255, 255, 255, 0.7);
-            box-shadow: 0 0 5px #BBB;
-        }
-        #controls {
-            top: 0;
-            left: 0;
-        }
-        #date {
-            top: 0;
-            right: 0;
-            font-size: 20px;
-        }
-        .icon {
-            opacity: 0.5;
-            width: 32px;
-            height: 32px;
-            display: inline-block;
-        }
-        .icon.active {
-            opacity: 1;
-            cursor: pointer;
-        }
-        .icon.pause {
-            background-image: url('vendor/img/pause.png');
-        }
-        .icon.pin {
-            background-image: url('vendor/img/pin.png');
-        }
-        .icon.play {
-            background-image: url('vendor/img/play.png');
-        }
-        .icon.rewind {
-            background-image: url('vendor/img/rewind.png');
-        }
-        .icon.zoom {
-            background-image: url('vendor/img/zoom.png');
-        }
-    </style>
+    <link rel="stylesheet" type="text/css" href="build/app.css">
 </head>
 <body>
     <div id="map"></div>

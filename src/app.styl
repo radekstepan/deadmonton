@@ -1,0 +1,38 @@
+html, body
+    height: 100%
+
+#canvas
+    position: absolute
+    top: 0
+    left: 0
+
+.box
+    position: absolute
+    z-index: 2
+    padding: 2px 4px
+    color: #333
+    background: rgba(255, 255, 255, 0.7)
+    box-shadow: 0 0 5px #BBB
+
+#date
+    top: 0
+    right: 0
+    font-size: 20px
+
+#controls
+    top: 0
+    left: 0
+
+    .icon
+        opacity: 0.5
+        width: 32px
+        height: 32px
+        display: inline-block
+
+        &.active
+            opacity: 1
+            cursor: pointer
+
+        for name in pause pin play rewind zoom
+            &.{name}
+                background-image: url('/vendor/eightyshades-icons/' + name + '.png')

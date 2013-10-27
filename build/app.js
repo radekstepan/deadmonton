@@ -208,4 +208,4 @@ $$___src_index = (function(module, exports) {
 })
 );
 
-//@ sourceMappingURL=browser.js.map
+//@ sourceMappingURL=app.js.map
