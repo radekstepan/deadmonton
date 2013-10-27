@@ -1,19 +1,10 @@
 config = require './config'
 
-module.exports = ->
-    # Controls.
-    controls = {}
-    ( controls[name] = $("#controls .icon.#{name}") for name in [ 'rewind', 'play', 'pause' ] )
+Layout = require './views/layout'
 
-    # Play/pause.
-    for tuple in [
-        [ 'play', 'pause' ]
-        [ 'pause', 'play' ]
-    ] then do (tuple) ->
-        [ a, b ] = tuple
-        (el = controls[a]).on 'click', ->
-            el.removeClass('active')
-            controls[b].addClass('active')
+module.exports = ->
+    # Init the whole layout.
+    do (new Layout()).render
 
     # Set available area for map & canvas.
     { width, height } = document.querySelector('body').getBoundingClientRect()

@@ -3,11 +3,13 @@
     "version": "0.0.0",
     "dependencies": {
         "async": null,
+        "backbone": null,
         "jquery": null,
         "leaflet-dist": null,
         "leaflet-providers": null,
         "lodash": null,
         "moment": null,
+        "mustache": null,
         "normalize-css": null
     }
 }

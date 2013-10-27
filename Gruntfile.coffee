@@ -8,6 +8,14 @@ module.exports = (grunt) ->
             browser:
                 options:
                     dest: 'build/app.js'
+        
+        mustache:
+            files:
+                src: 'src/templates/'
+                dest: 'build/templates.js'
+                options:
+                    prefix: 'var JST = '
+                    postfix: ';'
 
         stylus:
             compile:
@@ -16,7 +24,9 @@ module.exports = (grunt) ->
                 files:
                     'build/app.css': 'src/app.styl'
 
+
     grunt.loadNpmTasks('grunt-coffee-build')
+    grunt.loadNpmTasks('grunt-mustache')
     grunt.loadNpmTasks('grunt-contrib-stylus')
 
-    grunt.registerTask('default', [ 'coffee_build', 'stylus' ])
+    grunt.registerTask('default', [ 'coffee_build', 'mustache', 'stylus' ])
