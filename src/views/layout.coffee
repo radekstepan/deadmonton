@@ -1,5 +1,6 @@
 Controls = require './controls'
-mediator = require '../core/mediator'
+Canvas   = require './canvas'
+mediator = require '../modules/mediator'
 
 class Layout extends Backbone.View
 
@@ -16,11 +17,16 @@ class Layout extends Backbone.View
             do $(@el).find('#loading').hide
         , @
 
+        # Get the data.
+        $.getJSON 'data/crime.json', (collection) =>
+            do (new Canvas({ collection })).render
+            mediator.trigger 'loaded'
+
     render: ->
         $(@el).html Mustache.render @template, {}
-
-        @views.push view = new Controls()
-        do view.render
+        
+        # Add map controls.
+        do (new Controls()).render
 
         @
 

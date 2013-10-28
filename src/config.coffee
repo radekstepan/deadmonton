@@ -13,3 +13,8 @@ module.exports =
         'Sexual Assaults': [ 227, 26, 28 ]
 
         'Homicide': [ 0, 0, 0 ]
+
+    # Available area.
+    'window':
+        'width':  do $(window).width
+        'height': do $(window).height
