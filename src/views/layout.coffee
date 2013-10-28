@@ -1,4 +1,5 @@
 Controls = require './controls'
+mediator = require '../core/mediator'
 
 class Layout extends Backbone.View
 
@@ -9,6 +10,11 @@ class Layout extends Backbone.View
     constructor: ->
         super
         @views = []
+
+        # Remove sign when done loading.
+        mediator.on 'loaded', ->
+            do $(@el).find('#loading').hide
+        , @
 
     render: ->
         $(@el).html Mustache.render @template, {}

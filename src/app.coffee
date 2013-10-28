@@ -1,4 +1,5 @@
-config = require './config'
+config   = require './config'
+mediator = require './core/mediator'
 
 Layout = require './views/layout'
 
@@ -18,6 +19,8 @@ module.exports = ->
 
     # Get the data.
     $.getJSON 'data/crime.json', (data) ->
+        mediator.trigger 'loaded'
+
         # Center on Edmonton.    
         map = new L.Map 'map',
             'center': new L.LatLng(53.5501, -113.5049),

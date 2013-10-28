@@ -4,7 +4,14 @@
 this,
 (function(require, exports, module, global, undefined) {
 
-  var $$___src_views_controls = {};
+  var $$___src_core_mediator = {};
+$$___src_core_mediator = (function(module, exports) {
+
+  module.exports = _.extend({}, Backbone.Events);
+
+
+  return module.exports;
+})({exports: $$___src_core_mediator}, $$___src_core_mediator);var $$___src_views_controls = {};
 $$___src_views_controls = (function(module, exports) {
 
   var Controls, _ref,
@@ -48,11 +55,13 @@ module.exports = Controls;
 })({exports: $$___src_views_controls}, $$___src_views_controls);var $$___src_views_layout = {};
 $$___src_views_layout = (function(module, exports) {
 
-  var Controls, Layout,
+  var Controls, Layout, mediator,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 Controls = $$___src_views_controls;
+
+mediator = $$___src_core_mediator;
 
 Layout = (function(_super) {
   __extends(Layout, _super);
@@ -64,6 +73,9 @@ Layout = (function(_super) {
   function Layout() {
     Layout.__super__.constructor.apply(this, arguments);
     this.views = [];
+    mediator.on('loaded', function() {
+      return $(this.el).find('#loading').hide();
+    }, this);
   }
 
   Layout.prototype.render = function() {
@@ -103,9 +115,11 @@ $$___src_config = (function(module, exports) {
 })({exports: $$___src_config}, $$___src_config);var $$___src_app = {};
 $$___src_app = (function(module, exports) {
 
-  var Layout, config;
+  var Layout, config, mediator;
 
 config = $$___src_config;
+
+mediator = $$___src_core_mediator;
 
 Layout = $$___src_views_layout;
 
@@ -120,6 +134,7 @@ module.exports = function() {
   ctx = canvas.getContext("2d");
   return $.getJSON('data/crime.json', function(data) {
     var a, b, date, diff, i1, i2, map, particles;
+    mediator.trigger('loaded');
     map = new L.Map('map', {
       'center': new L.LatLng(53.5501, -113.5049),
       'zoom': 12,
