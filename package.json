@@ -6,13 +6,14 @@
         "async": "~0.2.9",
         "request": "~2.27.0",
         "lodash": "~2.2.1",
-        "moment": "~2.3.1"
+        "moment": "~2.3.1",
+        "coffee-script": "~1.6.3"
     },
     "devDependencies": {
         "grunt": "~0.4.1",
         "grunt-coffee-build": "~1.4.12",
         "grunt-contrib-stylus": "~0.9.0",
-        "npm install grunt-mustache": "~0.1.4"
+        "grunt-mustache": "~0.1.4"
     },
     "repository": {
         "type": "git",
