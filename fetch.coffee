@@ -8,11 +8,10 @@ _      = require 'lodash'
 async.waterfall [ (cb) ->
     async.map [ 'hoods', 'crime' ], (name, cb) ->
         fs.readFile "./data/#{name}.json", 'utf-8', (err, data) ->
-            json = {}
             # Parse.
-            ( try json = JSON.parse data ) unless err
+            ( try data = JSON.parse data ) unless err
             # Silently done.
-            cb null, json
+            cb null, data
     , cb
 
 # Generate the tasks.
@@ -20,16 +19,16 @@ async.waterfall [ (cb) ->
     # Explode.
     [ hoods, crime ] = data
 
-    return cb 'No hoods, go get them from the police' unless _.keys(hoods).length
+    return cb 'No hoods, go get them from the police' unless hoods
+
+    crime ?= []
 
     # The range of time in question.
-    now = do moment
-    b = now.format("YYYY,MM,DD")
-    a = now.subtract(60, 'd').format("YYYY,MM,DD")
+    b = do moment
+    a = b.clone().subtract(60, 'd')
 
     # Do we already have data?
-    if crime
-        length = crime.length
+    if (length = crime.length)
         # Start from the last day saved.
         a    = moment crime[length - 1].t
         last = do new Date(a).toJSON
@@ -53,8 +52,8 @@ async.waterfall [ (cb) ->
             # For this hood.
             neighbourhoodID: id
             # In this time range.
-            strStartDate: a
-            strEndDate: b
+            strStartDate: a.format("YYYY,MM,DD")
+            strEndDate: b.format("YYYY,MM,DD")
         
         # Actually run it.
         (cb) ->
@@ -100,7 +99,7 @@ async.waterfall [ (cb) ->
         return cb err if err
 
         # Flatten and sort.
-        sorted = _(results).flatten().sortBy('date').value()
+        sorted = _(results).flatten().sortBy('t').value()
 
         # Merge them with the previous data.
         cb null, crime.concat(sorted)
@@ -109,7 +108,7 @@ async.waterfall [ (cb) ->
 , (results, cb) ->
     # Write.
     fs.writeFile './data/crime.json'
-    , JSON.stringify(sorted), { 'flags': 'w' }, cb
+    , JSON.stringify(results), { 'flags': 'w' }, cb
 
 ], (err, results) ->
     throw err if err
