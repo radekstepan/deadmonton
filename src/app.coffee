@@ -7,7 +7,8 @@ module.exports = ->
     do (new Layout()).render
 
     # Set available area for map & canvas.
-    { width, height } = document.querySelector('body').getBoundingClientRect()
+    width = do $(window).width
+    height = do $(window).height
 
     $('#map').css('width', "#{width}px").css('height', "#{height}px")
     $('#canvas').attr('width', width).attr('height', height)
@@ -28,8 +29,8 @@ module.exports = ->
         particles = []
 
         # The time range.
-        a = moment new Date data[0].date
-        b = moment new Date data[data.length - 1].date
+        a = moment new Date data[0].t
+        b = moment new Date data[data.length - 1].t
 
         diff = b.diff a, 'days'
 
@@ -48,14 +49,14 @@ module.exports = ->
             go = yes
             while go and data.length
                 # Peak.
-                if a >= new Date data[0].date
+                if a >= new Date data[0].t
                     particle = do data.shift
                     # How many ticks do I live for?
                     particle.ttl = 10
                     # Save the particle location.
-                    particle.point = map.latLngToLayerPoint particle.loc
+                    particle.point = map.latLngToLayerPoint particle.l
                     # The color?
-                    particle.color = config.colors[particle.type].join(',')
+                    particle.color = config.colors[particle.c].join(',')
                     # Add to the stack.
                     particles.push particle
                 else

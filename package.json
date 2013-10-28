@@ -12,7 +12,7 @@
         "grunt": "~0.4.1",
         "grunt-coffee-build": "~1.4.12",
         "grunt-contrib-stylus": "~0.9.0",
-        "npm install grunt-mustache": "~0.1.4"
+        "grunt-mustache": "~0.1.4"
     },
     "repository": {
         "type": "git",

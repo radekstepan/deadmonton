@@ -110,9 +110,10 @@ config = $$___src_config;
 Layout = $$___src_views_layout;
 
 module.exports = function() {
-  var canvas, ctx, height, width, _ref;
+  var canvas, ctx, height, width;
   (new Layout()).render();
-  _ref = document.querySelector('body').getBoundingClientRect(), width = _ref.width, height = _ref.height;
+  width = $(window).width();
+  height = $(window).height();
   $('#map').css('width', "" + width + "px").css('height', "" + height + "px");
   $('#canvas').attr('width', width).attr('height', height);
   canvas = document.getElementById("canvas");
@@ -126,19 +127,19 @@ module.exports = function() {
     });
     L.tileLayer.provider('Stamen.Toner').addTo(map);
     particles = [];
-    a = moment(new Date(data[0].date));
-    b = moment(new Date(data[data.length - 1].date));
+    a = moment(new Date(data[0].t));
+    b = moment(new Date(data[data.length - 1].t));
     diff = b.diff(a, 'days');
     date = $('#date');
     i1 = setInterval(function() {
       var go, i, particle;
       if (a > b) {
         return (function() {
-          var _i, _len, _ref1, _results;
-          _ref1 = [i1, i2];
+          var _i, _len, _ref, _results;
+          _ref = [i1, i2];
           _results = [];
-          for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
-            i = _ref1[_i];
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
             _results.push(clearInterval(i));
           }
           return _results;
@@ -147,11 +148,11 @@ module.exports = function() {
       date.html(a.format("ddd, Do MMMM YYYY"));
       go = true;
       while (go && data.length) {
-        if (a >= new Date(data[0].date)) {
+        if (a >= new Date(data[0].t)) {
           particle = data.shift();
           particle.ttl = 10;
-          particle.point = map.latLngToLayerPoint(particle.loc);
-          particle.color = config.colors[particle.type].join(',');
+          particle.point = map.latLngToLayerPoint(particle.l);
+          particle.color = config.colors[particle.c].join(',');
           particles.push(particle);
         } else {
           go = false;
