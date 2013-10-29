@@ -7,7 +7,16 @@ class Canvas extends Backbone.View
 
     constructor: ->
         super
+
+        # The time range.
+        @now = moment new Date @collection[0].t
+        @end = moment new Date @collection[@collection.length - 1].t
         
+        # The particles.
+        @particles = []
+        @index = 0
+
+        # Select the canvas.
         canvas = document.getElementById("canvas")
         @ctx = canvas.getContext("2d")
 
@@ -16,8 +25,9 @@ class Canvas extends Backbone.View
         .attr('width', config.window.width)
         .attr('height', config.window.height)
 
-        # Play.
+        # Play/pause.
         mediator.on 'play', @play, @
+        mediator.on 'pause', @pause, @
 
     # Center map over Edmonton.
     render: ->
@@ -35,84 +45,86 @@ class Canvas extends Backbone.View
 
     # Play the show.
     play: ->
-        # The particles.
-        particles = []
-
-        # The time range.
-        a = moment new Date @collection[0].t
-        b = moment new Date @collection[@collection.length - 1].t
-
-        diff = b.diff a, 'days'
-
         date = $('#date')
 
-        self = @
-
         # Range replay.
-        i1 = setInterval ->
+        @i1 = setInterval =>
 
             # Have we reached the end?
-            return ( clearInterval(i) for i in [ i1, i2 ] ) if a > b
+            return do @stop if @now > @end
 
             # Show the new date.
-            date.html a.format("ddd, Do MMMM YYYY")
+            date.html @now.format("ddd, Do MMMM YYYY")
 
-            # Shift today's events from the queue.
+            # Get today's events from today.
             go = yes
-            while go and self.collection.length
+            while go and @index < @collection.length
                 # Peak.
-                if a >= new Date self.collection[0].t
-                    particle = do self.collection.shift
+                if @now >= new Date (particle = @collection[@index]).t
                     # How many ticks do I live for?
                     particle.ttl = 10
                     # Save the particle location.
-                    particle.point = self.map.latLngToLayerPoint particle.l
+                    particle.point = @map.latLngToLayerPoint particle.l
                     # The color?
                     particle.color = config.colors[particle.c].join(',')
                     # Add to the stack.
-                    particles.push particle
+                    @particles.push particle
+                    # Move index.
+                    @index += 1
                 else
                     go = no
 
             # Move by 1 day.
-            a = a.add('d', 1)
+            @now = @now.add('d', 1)
         
         , 2e2 # how quickly to change days
 
         # Meanwhile we are rendering the particles on canvas.
-        i2 = setInterval ->
+        @i2 = setInterval =>
 
             # Disappear previous frame.
-            self.ctx.globalCompositeOperation = "source-out"
+            @ctx.globalCompositeOperation = "source-out"
             # Background opacity.
-            self.ctx.fillStyle = "rgba(0,0,0,0.1)"
-            self.ctx.fillRect 0, 0, config.window.width, config.window.height
+            @ctx.fillStyle = "rgba(0,0,0,0.1)"
+            @ctx.fillRect 0, 0, config.window.width, config.window.height
             # Blend the particles.
-            self.ctx.globalCompositeOperation = 'darker'
+            @ctx.globalCompositeOperation = 'darker'
 
-            for particle in particles
+            for particle in @particles
                 { point, color } = particle
 
                 rad = particle.ttl
 
-                gradient = self.ctx.createRadialGradient point.x, point.y, 0, point.x, point.y, rad
+                gradient = @ctx.createRadialGradient point.x, point.y, 0, point.x, point.y, rad
                 gradient.addColorStop 0.0, "white"
                 gradient.addColorStop 0.8, "rgba(#{color},0.5)"
                 gradient.addColorStop 1.0, "black"
 
                 # Begin.
-                do self.ctx.beginPath
+                do @ctx.beginPath
 
-                self.ctx.fillStyle = gradient
-                self.ctx.arc point.x, point.y, rad, 0, Math.PI * 2, no
+                @ctx.fillStyle = gradient
+                @ctx.arc point.x, point.y, rad, 0, Math.PI * 2, no
 
                 # End.
-                do self.ctx.closePath
-                do self.ctx.fill
+                do @ctx.closePath
+                do @ctx.fill
 
                 # One tick less.
                 particle.ttl -= 0.1 if particle.ttl > 3
 
         , 33 # fps
+
+    # Clear the timeouts for a while.
+    pause: ->
+        ( clearInterval(i) for i in [ @i1, @i2 ] )
+
+    # Stop the show.
+    stop: ->
+        do @pause
+        @particles = []
+        @index = 0
+        # Change controls.
+        mediator.trigger 'stop'
 
 module.exports = Canvas

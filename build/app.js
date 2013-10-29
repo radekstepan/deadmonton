@@ -52,10 +52,15 @@ Canvas = (function(_super) {
   function Canvas() {
     var canvas;
     Canvas.__super__.constructor.apply(this, arguments);
+    this.now = moment(new Date(this.collection[0].t));
+    this.end = moment(new Date(this.collection[this.collection.length - 1].t));
+    this.particles = [];
+    this.index = 0;
     canvas = document.getElementById("canvas");
     this.ctx = canvas.getContext("2d");
     $('#canvas').attr('width', config.window.width).attr('height', config.window.height);
     mediator.on('play', this.play, this);
+    mediator.on('pause', this.pause, this);
   }
 
   Canvas.prototype.render = function() {
@@ -69,62 +74,50 @@ Canvas = (function(_super) {
   };
 
   Canvas.prototype.play = function() {
-    var a, b, date, diff, i1, i2, particles, self;
-    particles = [];
-    a = moment(new Date(this.collection[0].t));
-    b = moment(new Date(this.collection[this.collection.length - 1].t));
-    diff = b.diff(a, 'days');
+    var date,
+      _this = this;
     date = $('#date');
-    self = this;
-    i1 = setInterval(function() {
-      var go, i, particle;
-      if (a > b) {
-        return (function() {
-          var _i, _len, _ref, _results;
-          _ref = [i1, i2];
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            i = _ref[_i];
-            _results.push(clearInterval(i));
-          }
-          return _results;
-        })();
+    this.i1 = setInterval(function() {
+      var go, particle;
+      if (_this.now > _this.end) {
+        return _this.stop();
       }
-      date.html(a.format("ddd, Do MMMM YYYY"));
+      date.html(_this.now.format("ddd, Do MMMM YYYY"));
       go = true;
-      while (go && self.collection.length) {
-        if (a >= new Date(self.collection[0].t)) {
-          particle = self.collection.shift();
+      while (go && _this.index < _this.collection.length) {
+        if (_this.now >= new Date((particle = _this.collection[_this.index]).t)) {
           particle.ttl = 10;
-          particle.point = self.map.latLngToLayerPoint(particle.l);
+          particle.point = _this.map.latLngToLayerPoint(particle.l);
           particle.color = config.colors[particle.c].join(',');
-          particles.push(particle);
+          _this.particles.push(particle);
+          _this.index += 1;
         } else {
           go = false;
         }
       }
-      return a = a.add('d', 1);
+      return _this.now = _this.now.add('d', 1);
     }, 2e2);
-    return i2 = setInterval(function() {
-      var color, gradient, particle, point, rad, _i, _len, _results;
-      self.ctx.globalCompositeOperation = "source-out";
-      self.ctx.fillStyle = "rgba(0,0,0,0.1)";
-      self.ctx.fillRect(0, 0, config.window.width, config.window.height);
-      self.ctx.globalCompositeOperation = 'darker';
+    return this.i2 = setInterval(function() {
+      var color, gradient, particle, point, rad, _i, _len, _ref, _results;
+      _this.ctx.globalCompositeOperation = "source-out";
+      _this.ctx.fillStyle = "rgba(0,0,0,0.1)";
+      _this.ctx.fillRect(0, 0, config.window.width, config.window.height);
+      _this.ctx.globalCompositeOperation = 'darker';
+      _ref = _this.particles;
       _results = [];
-      for (_i = 0, _len = particles.length; _i < _len; _i++) {
-        particle = particles[_i];
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        particle = _ref[_i];
         point = particle.point, color = particle.color;
         rad = particle.ttl;
-        gradient = self.ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, rad);
+        gradient = _this.ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, rad);
         gradient.addColorStop(0.0, "white");
         gradient.addColorStop(0.8, "rgba(" + color + ",0.5)");
         gradient.addColorStop(1.0, "black");
-        self.ctx.beginPath();
-        self.ctx.fillStyle = gradient;
-        self.ctx.arc(point.x, point.y, rad, 0, Math.PI * 2, false);
-        self.ctx.closePath();
-        self.ctx.fill();
+        _this.ctx.beginPath();
+        _this.ctx.fillStyle = gradient;
+        _this.ctx.arc(point.x, point.y, rad, 0, Math.PI * 2, false);
+        _this.ctx.closePath();
+        _this.ctx.fill();
         if (particle.ttl > 3) {
           _results.push(particle.ttl -= 0.1);
         } else {
@@ -133,6 +126,24 @@ Canvas = (function(_super) {
       }
       return _results;
     }, 33);
+  };
+
+  Canvas.prototype.pause = function() {
+    var i, _i, _len, _ref, _results;
+    _ref = [this.i1, this.i2];
+    _results = [];
+    for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+      i = _ref[_i];
+      _results.push(clearInterval(i));
+    }
+    return _results;
+  };
+
+  Canvas.prototype.stop = function() {
+    this.pause();
+    this.particles = [];
+    this.index = 0;
+    return mediator.trigger('stop');
   };
 
   return Canvas;
@@ -166,14 +177,24 @@ Controls = (function(_super) {
 
   function Controls() {
     Controls.__super__.constructor.apply(this, arguments);
+    this.playing = false;
     mediator.on('loaded', function() {
       return $(this.el).find('.icon.play').addClass('active');
+    }, this);
+    mediator.on('stop', function() {
+      $(this.el).find('.icon.play').removeClass('active');
+      $(this.el).find('.icon.pause').removeClass('active');
+      return $(this.el).find('.icon.replay').addClass('active');
     }, this);
   }
 
   Controls.prototype.onPlay = function(evt) {
+    if (!$(evt.target).hasClass('active')) {
+      return;
+    }
     $(this.el).find('.play, .pause').toggleClass('active');
-    return mediator.trigger('play');
+    this.playing = !this.playing;
+    return mediator.trigger(['pause', 'play'][+this.playing]);
   };
 
   Controls.prototype.render = function() {
