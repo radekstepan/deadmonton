@@ -2,7 +2,7 @@ build:
 	bower install
 	grunt
 
-minify: build
+minify:
 	grunt minify
 
 watch:
