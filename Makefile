@@ -2,6 +2,9 @@ build:
 	bower install
 	grunt
 
+minify: build
+	grunt minify
+
 watch:
 	watch --color -n 1 make build
 

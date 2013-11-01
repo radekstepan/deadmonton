@@ -4,7 +4,7 @@ class Controls extends Backbone.View
 
     el: '#controls'
 
-    template: JST.controls
+    template: require '../templates/controls'
 
     events:
         'click .icon.play': 'onPlay'
@@ -55,7 +55,7 @@ class Controls extends Backbone.View
         mediator.trigger 'play'
 
     render: ->
-        $(@el).html Mustache.render @template, {}
+        $(@el).html do @template
 
         @
 

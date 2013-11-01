@@ -6,7 +6,7 @@ class Layout extends Backbone.View
 
     el: 'body'
 
-    template: JST.layout
+    template: require '../templates/layout'
 
     constructor: ->
         super
@@ -23,7 +23,7 @@ class Layout extends Backbone.View
             mediator.trigger 'loaded'
 
     render: ->
-        $(@el).html Mustache.render @template, {}
+        $(@el).html do @template
         
         # Add map controls.
         do (new Controls()).render
