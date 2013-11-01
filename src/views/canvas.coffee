@@ -8,13 +8,8 @@ class Canvas extends Backbone.View
     constructor: ->
         super
 
-        # The time range.
-        @now = moment new Date @collection[0].t
-        @end = moment new Date @collection[@collection.length - 1].t
-        
-        # The particles.
-        @particles = []
-        @index = 0
+        # Set/reset.
+        do @reset
 
         # Select the canvas.
         canvas = document.getElementById("canvas")
@@ -25,9 +20,10 @@ class Canvas extends Backbone.View
         .attr('width', config.window.width)
         .attr('height', config.window.height)
 
-        # Play/pause.
+        # Listeners.
         mediator.on 'play', @play, @
         mediator.on 'pause', @pause, @
+        mediator.on 'replay', @reset, @
 
     # Center map over Edmonton.
     render: ->
@@ -126,5 +122,17 @@ class Canvas extends Backbone.View
         @index = 0
         # Change controls.
         mediator.trigger 'stop'
+
+    # Replay.
+    reset: ->
+        do @pause
+
+        # The time range.
+        @now = moment new Date @collection[0].t
+        @end = moment new Date @collection[@collection.length - 1].t
+        
+        # The particles.
+        @particles = []
+        @index = 0
 
 module.exports = Canvas

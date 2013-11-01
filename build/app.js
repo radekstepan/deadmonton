@@ -52,15 +52,13 @@ Canvas = (function(_super) {
   function Canvas() {
     var canvas;
     Canvas.__super__.constructor.apply(this, arguments);
-    this.now = moment(new Date(this.collection[0].t));
-    this.end = moment(new Date(this.collection[this.collection.length - 1].t));
-    this.particles = [];
-    this.index = 0;
+    this.reset();
     canvas = document.getElementById("canvas");
     this.ctx = canvas.getContext("2d");
     $('#canvas').attr('width', config.window.width).attr('height', config.window.height);
     mediator.on('play', this.play, this);
     mediator.on('pause', this.pause, this);
+    mediator.on('replay', this.reset, this);
   }
 
   Canvas.prototype.render = function() {
@@ -146,6 +144,14 @@ Canvas = (function(_super) {
     return mediator.trigger('stop');
   };
 
+  Canvas.prototype.reset = function() {
+    this.pause();
+    this.now = moment(new Date(this.collection[0].t));
+    this.end = moment(new Date(this.collection[this.collection.length - 1].t));
+    this.particles = [];
+    return this.index = 0;
+  };
+
   return Canvas;
 
 })(Backbone.View);
@@ -172,7 +178,8 @@ Controls = (function(_super) {
 
   Controls.prototype.events = {
     'click .icon.play': 'onPlay',
-    'click .icon.pause': 'onPlay'
+    'click .icon.pause': 'onPlay',
+    'click .icon.replay': 'onReplay'
   };
 
   function Controls() {
@@ -194,7 +201,20 @@ Controls = (function(_super) {
     }
     $(this.el).find('.play, .pause').toggleClass('active');
     this.playing = !this.playing;
-    return mediator.trigger(['pause', 'play'][+this.playing]);
+    mediator.trigger(['pause', 'play'][+this.playing]);
+    return $(this.el).find('.replay').addClass('active');
+  };
+
+  Controls.prototype.onReplay = function(evt) {
+    var el;
+    if (!(el = $(evt.target)).hasClass('active')) {
+      return;
+    }
+    this.playing = true;
+    $(this.el).find('.play').removeClass('active');
+    $(this.el).find('.pause').addClass('active');
+    mediator.trigger('replay');
+    return mediator.trigger('play');
   };
 
   Controls.prototype.render = function() {

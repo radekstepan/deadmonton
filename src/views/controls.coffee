@@ -9,6 +9,7 @@ class Controls extends Backbone.View
     events:
         'click .icon.play': 'onPlay'
         'click .icon.pause': 'onPlay'
+        'click .icon.replay': 'onReplay'
 
     constructor: ->
         super
@@ -35,8 +36,23 @@ class Controls extends Backbone.View
         $(@el).find('.play, .pause').toggleClass('active')
         # Toggle state.
         @playing = !@playing
+
         # Trigger event.
         mediator.trigger [ 'pause', 'play' ][+@playing]
+
+        # We can rewind now.
+        $(@el).find('.replay').addClass('active')
+
+    onReplay: (evt) ->
+        return unless (el = $(evt.target)).hasClass 'active'
+
+        @playing = yes
+
+        $(@el).find('.play').removeClass('active')
+        $(@el).find('.pause').addClass('active')
+
+        mediator.trigger 'replay'
+        mediator.trigger 'play'
 
     render: ->
         $(@el).html Mustache.render @template, {}
