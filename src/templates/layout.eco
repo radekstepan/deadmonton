@@ -2,4 +2,5 @@
 <canvas id="canvas"></canvas>
 <div id="controls" class="box"></div>
 <div id="date" class="box"></div>
+<ul id="categories" class="box"></ul>
 <div id="loading" class="box">Loading &hellip;</div>

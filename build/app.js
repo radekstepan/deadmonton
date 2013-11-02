@@ -220,15 +220,39 @@
     require.register('deadmonton/src/config.js', function(exports, require, module) {
     
       module.exports = {
-        'colors': {
-          'Theft From Vehicle': [255, 237, 160],
-          'Theft Of Vehicle': [254, 217, 118],
-          'Theft Over $5000': [254, 217, 118],
-          'Break and Enter': [253, 141, 60],
-          'Robbery': [253, 141, 60],
-          'Assault': [227, 26, 28],
-          'Sexual Assaults': [227, 26, 28],
-          'Homicide': [0, 0, 0]
+        'categories': {
+          'Theft From Vehicle': {
+            'rgb': [255, 237, 160],
+            'active': true
+          },
+          'Theft Of Vehicle': {
+            'rgb': [254, 217, 118],
+            'active': true
+          },
+          'Theft Over $5000': {
+            'rgb': [254, 217, 118],
+            'active': true
+          },
+          'Break and Enter': {
+            'rgb': [253, 141, 60],
+            'active': true
+          },
+          'Robbery': {
+            'rgb': [253, 141, 60],
+            'active': true
+          },
+          'Assault': {
+            'rgb': [227, 26, 28],
+            'active': true
+          },
+          'Sexual Assaults': {
+            'rgb': [227, 26, 28],
+            'active': true
+          },
+          'Homicide': {
+            'rgb': [0, 0, 0],
+            'active': true
+          }
         },
         'window': {
           'width': $(window).width(),
@@ -244,6 +268,77 @@
     
       module.exports = _.extend({}, Backbone.Events);
       
+    });
+
+    
+    // category.eco
+    require.register('deadmonton/src/templates/category.js', function(exports, require, module) {
+    
+      module.exports = function(__obj) {
+        if (!__obj) __obj = {};
+        var __out = [], __capture = function(callback) {
+          var out = __out, result;
+          __out = [];
+          callback.call(this);
+          result = __out.join('');
+          __out = out;
+          return __safe(result);
+        }, __sanitize = function(value) {
+          if (value && value.ecoSafe) {
+            return value;
+          } else if (typeof value !== 'undefined' && value != null) {
+            return __escape(value);
+          } else {
+            return '';
+          }
+        }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
+        __safe = __obj.safe = function(value) {
+          if (value && value.ecoSafe) {
+            return value;
+          } else {
+            if (!(typeof value !== 'undefined' && value != null)) value = '';
+            var result = new String(value);
+            result.ecoSafe = true;
+            return result;
+          }
+        };
+        if (!__escape) {
+          __escape = __obj.escape = function(value) {
+            return ('' + value)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;');
+          };
+        }
+        (function() {
+          (function() {
+            __out.push('<li data-category="');
+          
+            __out.push(__sanitize(this.name));
+          
+            __out.push('" class="');
+          
+            if (this.active) {
+              __out.push('active');
+            }
+          
+            __out.push('">\n    <span class="circle" style="background:rgb(');
+          
+            __out.push(__sanitize(this.rgb));
+          
+            __out.push(')"></span> ');
+          
+            __out.push(__sanitize(this.name));
+          
+            __out.push('\n</li>');
+          
+          }).call(this);
+          
+        }).call(__obj);
+        __obj.safe = __objSafe, __obj.escape = __escape;
+        return __out.join('');
+      }
     });
 
     
@@ -342,7 +437,7 @@
         }
         (function() {
           (function() {
-            __out.push('<div id="map"></div>\n<canvas id="canvas"></canvas>\n<div id="controls" class="box"></div>\n<div id="date" class="box"></div>\n<div id="loading" class="box">Loading &hellip;</div>');
+            __out.push('<div id="map"></div>\n<canvas id="canvas"></canvas>\n<div id="controls" class="box"></div>\n<div id="date" class="box"></div>\n<ul id="categories" class="box"></ul>\n<div id="loading" class="box">Loading &hellip;</div>');
           
           }).call(this);
           
@@ -357,6 +452,7 @@
     require.register('deadmonton/src/views/canvas.js', function(exports, require, module) {
     
       var Canvas, config, mediator,
+        __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
         __hasProp = {}.hasOwnProperty,
         __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
       
@@ -370,6 +466,7 @@
         Canvas.prototype.el = '#map';
       
         function Canvas() {
+          this.draw = __bind(this.draw, this);
           var canvas;
           Canvas.__super__.constructor.apply(this, arguments);
           this.reset();
@@ -379,6 +476,7 @@
           mediator.on('play', this.play, this);
           mediator.on('pause', this.pause, this);
           mediator.on('replay', this.reset, this);
+          mediator.on('redraw', this.redraw, this);
         }
       
         Canvas.prototype.render = function() {
@@ -426,15 +524,18 @@
           return this.ctx.globalCompositeOperation = 'darker';
         };
       
-        Canvas.prototype.draw = function(_arg) {
-          var color, gradient, point, ttl;
-          point = _arg.point, color = _arg.color, ttl = _arg.ttl;
+        Canvas.prototype.draw = function(particle) {
+          var gradient, point, ttl;
+          point = particle.point, ttl = particle.ttl;
           if (point.x < 0 || point.y < 0) {
+            return;
+          }
+          if (!config.categories[particle.c].active) {
             return;
           }
           gradient = this.ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, ttl);
           gradient.addColorStop(0.0, "white");
-          gradient.addColorStop(0.8, "rgba(" + color + ",0.5)");
+          gradient.addColorStop(0.8, "rgba(" + particle.color + ",0.5)");
           gradient.addColorStop(1.0, "black");
           this.ctx.beginPath();
           this.ctx.fillStyle = gradient;
@@ -446,6 +547,7 @@
         Canvas.prototype.play = function() {
           var date,
             _this = this;
+          this.playing = true;
           date = $('#date');
           this.i1 = setInterval(function() {
             var go, particle;
@@ -458,7 +560,7 @@
               if (_this.now >= new Date((particle = _this.collection[_this.index]).t)) {
                 particle.ttl = 10;
                 particle.point = _this.position(particle.l);
-                particle.color = config.colors[particle.c].join(',');
+                particle.color = config.categories[particle.c].rgb.join(',');
                 _this.particles.push(particle);
                 _this.index += 1;
               } else {
@@ -486,18 +588,13 @@
         };
       
         Canvas.prototype.pause = function() {
-          var i, _i, _len, _ref, _results;
-          _ref = [this.i1, this.i2];
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            i = _ref[_i];
-            _results.push(clearInterval(i));
-          }
-          return _results;
+          this.playing = false;
+          return _.each([this.i1, this.i2], clearInterval);
         };
       
         Canvas.prototype.stop = function() {
           this.pause();
+          this.playing = false;
           return mediator.trigger('stop');
         };
       
@@ -506,7 +603,16 @@
           this.now = moment(new Date(this.collection[0].t));
           this.end = moment(new Date(this.collection[this.collection.length - 1].t));
           this.particles = [];
-          return this.index = 0;
+          this.index = 0;
+          return this.playing = false;
+        };
+      
+        Canvas.prototype.redraw = function() {
+          if (this.playing) {
+            return;
+          }
+          this.frame(true);
+          return _.each(this.particles, this.draw);
         };
       
         return Canvas;
@@ -514,6 +620,61 @@
       })(Backbone.View);
       
       module.exports = Canvas;
+      
+    });
+
+    
+    // categories.coffee
+    require.register('deadmonton/src/views/categories.js', function(exports, require, module) {
+    
+      var Categories, config, mediator,
+        __hasProp = {}.hasOwnProperty,
+        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+      
+      mediator = require('../modules/mediator');
+      
+      config = require('../config');
+      
+      Categories = (function(_super) {
+        __extends(Categories, _super);
+      
+        Categories.prototype.el = '#categories';
+      
+        Categories.prototype.template = require('../templates/category');
+      
+        Categories.prototype.events = {
+          'click li': 'onToggle'
+        };
+      
+        function Categories() {
+          Categories.__super__.constructor.apply(this, arguments);
+        }
+      
+        Categories.prototype.render = function() {
+          var data, name, _ref;
+          _ref = config.categories;
+          for (name in _ref) {
+            data = _ref[name];
+            $(this.el).append(this.template(_.extend(data, {
+              name: name
+            })));
+          }
+          return this;
+        };
+      
+        Categories.prototype.onToggle = function(evt) {
+          var el, ref;
+          ref = config.categories[(el = $(evt.target)).data('category')];
+          ref.active = !ref.active;
+          el.toggleClass('active');
+          return mediator.trigger('redraw');
+        };
+      
+        return Categories;
+      
+      })(Backbone.View);
+      
+      module.exports = Categories;
       
     });
 
@@ -601,15 +762,17 @@
     // layout.coffee
     require.register('deadmonton/src/views/layout.js', function(exports, require, module) {
     
-      var Canvas, Controls, Layout, mediator,
+      var Canvas, Categories, Controls, Layout, mediator,
         __hasProp = {}.hasOwnProperty,
         __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
       
+      mediator = require('../modules/mediator');
+      
       Controls = require('./controls');
       
-      Canvas = require('./canvas');
+      Categories = require('./categories');
       
-      mediator = require('../modules/mediator');
+      Canvas = require('./canvas');
       
       Layout = (function(_super) {
         __extends(Layout, _super);
@@ -636,6 +799,7 @@
         Layout.prototype.render = function() {
           $(this.el).html(this.template());
           (new Controls()).render();
+          (new Categories()).render();
           return this;
         };
       

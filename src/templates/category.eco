@@ -1,0 +1,3 @@
+<li data-category="<%= @name %>" class="<% if @active: %>active<% end %>">
+    <span class="circle" style="background:rgb(<%= @rgb %>)"></span> <%= @name %>
+</li>

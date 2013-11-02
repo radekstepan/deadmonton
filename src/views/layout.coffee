@@ -1,6 +1,8 @@
-Controls = require './controls'
-Canvas   = require './canvas'
-mediator = require '../modules/mediator'
+mediator   = require '../modules/mediator'
+
+Controls   = require './controls'
+Categories = require './categories'
+Canvas     = require './canvas'
 
 class Layout extends Backbone.View
 
@@ -27,6 +29,7 @@ class Layout extends Backbone.View
         
         # Add map controls.
         do (new Controls()).render
+        do (new Categories()).render
 
         @
 

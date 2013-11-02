@@ -1,18 +1,34 @@
 module.exports =
 
     # Color translation table (ColorBrewer YlOrRd).
-    'colors':
-        'Theft From Vehicle': [ 255, 237, 160 ]
-        'Theft Of Vehicle': [ 254, 217, 118 ]
-        'Theft Over $5000': [ 254, 217, 118 ]
+    'categories':
+        'Theft From Vehicle':
+            'rgb': [ 255, 237, 160 ]
+            'active': yes
+        'Theft Of Vehicle':
+            'rgb': [ 254, 217, 118 ]
+            'active': yes
+        'Theft Over $5000':
+            'rgb': [ 254, 217, 118 ]
+            'active': yes
         
-        'Break and Enter': [ 253, 141, 60 ] # burglary
-        'Robbery': [ 253, 141, 60 ]
+        'Break and Enter':
+            'rgb': [ 253, 141, 60 ] # burglary
+            'active': yes
+        'Robbery':
+            'rgb': [ 253, 141, 60 ]
+            'active': yes
 
-        'Assault': [ 227, 26, 28 ]
-        'Sexual Assaults': [ 227, 26, 28 ]
+        'Assault':
+            'rgb': [ 227, 26, 28 ]
+            'active': yes
+        'Sexual Assaults':
+            'rgb': [ 227, 26, 28 ]
+            'active': yes
 
-        'Homicide': [ 0, 0, 0 ]
+        'Homicide':
+            'rgb': [ 0, 0, 0 ]
+            'active': yes
 
     # Available area.
     'window':

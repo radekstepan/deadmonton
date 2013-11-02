@@ -24,6 +24,7 @@ class Canvas extends Backbone.View
         mediator.on 'play', @play, @
         mediator.on 'pause', @pause, @
         mediator.on 'replay', @reset, @
+        mediator.on 'redraw', @redraw, @
 
     # Center map over Edmonton.
     render: ->
@@ -77,13 +78,19 @@ class Canvas extends Backbone.View
         @ctx.globalCompositeOperation = 'darker'
 
     # Draw a single particle.
-    draw: ({ point, color, ttl }) ->
+    draw: (particle) =>
+        { point, ttl } = particle
+
         # Skip if the location is off map.
         return if point.x < 0 or point.y < 0
 
+        # Skip if our category is not toggled.
+        return unless config.categories[particle.c].active
+
+        # Make the gradient.
         gradient = @ctx.createRadialGradient point.x, point.y, 0, point.x, point.y, ttl
         gradient.addColorStop 0.0, "white"
-        gradient.addColorStop 0.8, "rgba(#{color},0.5)"
+        gradient.addColorStop 0.8, "rgba(#{particle.color},0.5)"
         gradient.addColorStop 1.0, "black"
 
         # Begin.
@@ -98,6 +105,8 @@ class Canvas extends Backbone.View
 
     # Play the show.
     play: ->
+        @playing = yes
+
         date = $('#date')
 
         # Range replay.
@@ -119,7 +128,7 @@ class Canvas extends Backbone.View
                     # Save the particle location.
                     particle.point = @position particle.l
                     # The color?
-                    particle.color = config.colors[particle.c].join(',')
+                    particle.color = config.categories[particle.c].rgb.join(',')
                     # Add to the stack.
                     @particles.push particle
                     # Move index.
@@ -148,11 +157,13 @@ class Canvas extends Backbone.View
 
     # Clear the timeouts for a while.
     pause: ->
-        ( clearInterval(i) for i in [ @i1, @i2 ] )
+        @playing = no
+        _.each [ @i1, @i2 ], clearInterval
 
     # Stop the show.
     stop: ->
         do @pause
+        @playing = no
         # Change controls.
         mediator.trigger 'stop'
 
@@ -167,5 +178,17 @@ class Canvas extends Backbone.View
         # The particles.
         @particles = []
         @index = 0
+
+        @playing = no
+
+    # When we toggle a category.
+    redraw: ->
+        return if @playing
+
+        # Reset the frame.
+        @frame yes
+
+        # Force re-draw.
+        _.each @particles, @draw
 
 module.exports = Canvas
