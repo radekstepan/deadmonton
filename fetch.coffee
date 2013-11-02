@@ -3,6 +3,7 @@ async  = require 'async'
 moment = require 'moment'
 fs     = require 'fs'
 _      = require 'lodash'
+lzma   = do require('lzma').LZMA
 
 # Get the data files.
 async.waterfall [ (cb) ->
@@ -73,7 +74,7 @@ async.waterfall [ (cb) ->
                         Chrome/28.0.1500.71 Safari/537.36'
             , (err, res) ->
                 throw err if err
-                
+
                 # Turn to an array.
                 all = []
                 _.each res.body.d, (item) ->
@@ -104,11 +105,24 @@ async.waterfall [ (cb) ->
         # Merge them with the previous data.
         cb null, crime.concat(sorted)
 
-
+# Write the data.
 , (results, cb) ->
-    # Write.
-    fs.writeFile './data/crime.json'
-    , JSON.stringify(results), { 'flags': 'w' }, cb
+    string = JSON.stringify results
 
-], (err, results) ->
+    write = (data, filename, cb) ->    
+        fs.writeFile './data/' + filename
+        , data, { 'flags': 'w' }, cb
+
+    # Just JSON.
+    async.parallel [ (cb) ->
+        write string, 'crime.json', cb
+
+    # LZW compressed JSON.
+    , (cb) ->
+        lzma.compress string, 3
+        , _.partialRight write, 'crime.json.lzma', cb
+    
+    ], cb
+
+], (err) ->
     throw err if err

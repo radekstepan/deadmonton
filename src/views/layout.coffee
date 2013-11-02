@@ -20,9 +20,13 @@ class Layout extends Backbone.View
         , @
 
         # Get the data.
-        $.getJSON 'data/crime.json', (collection) =>
-            do (new Canvas({ collection })).render
-            mediator.trigger 'loaded'
+        $.get 'data/crime.json.lzma', (i) ->
+            LZMA.decompress i.split(','), (o) ->
+
+                collection = JSON.parse o
+                
+                do (new Canvas({ collection })).render
+                mediator.trigger 'loaded'
 
     render: ->
         $(@el).html do @template

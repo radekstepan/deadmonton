@@ -783,17 +783,20 @@
         Layout.prototype.template = require('../templates/layout');
       
         function Layout() {
-          var _this = this;
           Layout.__super__.constructor.apply(this, arguments);
           this.views = [];
           mediator.on('loaded', function() {
             return $(this.el).find('#loading').hide();
           }, this);
-          $.getJSON('data/crime.json', function(collection) {
-            (new Canvas({
-              collection: collection
-            })).render();
-            return mediator.trigger('loaded');
+          $.get('data/crime.json.lzma', function(i) {
+            return LZMA.decompress(i.split(','), function(o) {
+              var collection;
+              collection = JSON.parse(o);
+              (new Canvas({
+                collection: collection
+              })).render();
+              return mediator.trigger('loaded');
+            });
           });
         }
       

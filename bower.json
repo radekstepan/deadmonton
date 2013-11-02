@@ -7,6 +7,7 @@
         "jquery": null,
         "leaflet-dist": null,
         "leaflet-providers": null,
+        "lzma-js": "https://raw.github.com/nmrugg/LZMA-JS/master/src/lzma_worker.js",
         "lodash": null,
         "moment": null,
         "normalize-css": null
