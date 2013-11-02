@@ -525,7 +525,7 @@
         };
       
         Canvas.prototype.draw = function(particle) {
-          var gradient, point, ttl;
+          var gradient, point, radius, ttl;
           point = particle.point, ttl = particle.ttl;
           if (point.x < 0 || point.y < 0) {
             return;
@@ -533,13 +533,14 @@
           if (!config.categories[particle.c].active) {
             return;
           }
-          gradient = this.ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, ttl);
+          radius = ttl * 0.1 * this.map.getZoom();
+          gradient = this.ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, radius);
           gradient.addColorStop(0.0, "white");
           gradient.addColorStop(0.8, "rgba(" + particle.color + ",0.5)");
           gradient.addColorStop(1.0, "black");
           this.ctx.beginPath();
           this.ctx.fillStyle = gradient;
-          this.ctx.arc(point.x, point.y, ttl, 0, Math.PI * 2, false);
+          this.ctx.arc(point.x, point.y, radius, 0, Math.PI * 2, false);
           this.ctx.closePath();
           return this.ctx.fill();
         };
