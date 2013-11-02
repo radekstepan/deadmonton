@@ -382,13 +382,65 @@
         }
       
         Canvas.prototype.render = function() {
+          var _this = this;
           $(this.el).css('width', "" + config.window.width + "px").css('height', "" + config.window.height + "px");
           this.map = new L.Map('map', {
             'center': new L.LatLng(53.5501, -113.5049),
             'zoom': 12,
             'zoomControl': false
           });
+          this.map.on('movestart', function() {
+            mediator.trigger('pause');
+            return _this.frame(true);
+          });
+          this.map.on('moveend', function() {
+            var particle, _i, _len, _ref, _results;
+            if (!_this.particles.length) {
+              return;
+            }
+            _ref = _this.particles;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              particle = _ref[_i];
+              particle.point = _this.position(particle.l);
+              _results.push(_this.draw(particle));
+            }
+            return _results;
+          });
           return L.tileLayer.provider('Stamen.Toner').addTo(this.map);
+        };
+      
+        Canvas.prototype.position = function(latLng) {
+          return this.map.layerPointToContainerPoint(this.map.latLngToLayerPoint(latLng));
+        };
+      
+        Canvas.prototype.frame = function(reset) {
+          var method;
+          if (reset == null) {
+            reset = false;
+          }
+          method = ['source-out', 'copy'][+reset];
+          this.ctx.globalCompositeOperation = method;
+          this.ctx.fillStyle = "rgba(0,0,0,0.1)";
+          this.ctx.fillRect(0, 0, config.window.width, config.window.height);
+          return this.ctx.globalCompositeOperation = 'darker';
+        };
+      
+        Canvas.prototype.draw = function(_arg) {
+          var color, gradient, point, ttl;
+          point = _arg.point, color = _arg.color, ttl = _arg.ttl;
+          if (point.x < 0 || point.y < 0) {
+            return;
+          }
+          gradient = this.ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, ttl);
+          gradient.addColorStop(0.0, "white");
+          gradient.addColorStop(0.8, "rgba(" + color + ",0.5)");
+          gradient.addColorStop(1.0, "black");
+          this.ctx.beginPath();
+          this.ctx.fillStyle = gradient;
+          this.ctx.arc(point.x, point.y, ttl, 0, Math.PI * 2, false);
+          this.ctx.closePath();
+          return this.ctx.fill();
         };
       
         Canvas.prototype.play = function() {
@@ -405,7 +457,7 @@
             while (go && _this.index < _this.collection.length) {
               if (_this.now >= new Date((particle = _this.collection[_this.index]).t)) {
                 particle.ttl = 10;
-                particle.point = _this.map.latLngToLayerPoint(particle.l);
+                particle.point = _this.position(particle.l);
                 particle.color = config.colors[particle.c].join(',');
                 _this.particles.push(particle);
                 _this.index += 1;
@@ -416,26 +468,13 @@
             return _this.now = _this.now.add('d', 1);
           }, 2e2);
           return this.i2 = setInterval(function() {
-            var color, gradient, particle, point, rad, _i, _len, _ref, _results;
-            _this.ctx.globalCompositeOperation = "source-out";
-            _this.ctx.fillStyle = "rgba(0,0,0,0.1)";
-            _this.ctx.fillRect(0, 0, config.window.width, config.window.height);
-            _this.ctx.globalCompositeOperation = 'darker';
+            var particle, _i, _len, _ref, _results;
+            _this.frame();
             _ref = _this.particles;
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               particle = _ref[_i];
-              point = particle.point, color = particle.color;
-              rad = particle.ttl;
-              gradient = _this.ctx.createRadialGradient(point.x, point.y, 0, point.x, point.y, rad);
-              gradient.addColorStop(0.0, "white");
-              gradient.addColorStop(0.8, "rgba(" + color + ",0.5)");
-              gradient.addColorStop(1.0, "black");
-              _this.ctx.beginPath();
-              _this.ctx.fillStyle = gradient;
-              _this.ctx.arc(point.x, point.y, rad, 0, Math.PI * 2, false);
-              _this.ctx.closePath();
-              _this.ctx.fill();
+              _this.draw(particle);
               if (particle.ttl > 3) {
                 _results.push(particle.ttl -= 0.1);
               } else {
@@ -513,6 +552,11 @@
             $(this.el).find('.icon.play').removeClass('active');
             $(this.el).find('.icon.pause').removeClass('active');
             return $(this.el).find('.icon.replay').addClass('active');
+          }, this);
+          mediator.on('pause', function() {
+            this.playing = false;
+            $(this.el).find('.icon.play').addClass('active');
+            return $(this.el).find('.icon.pause').removeClass('active');
           }, this);
         }
       

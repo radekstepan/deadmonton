@@ -28,6 +28,12 @@ class Controls extends Backbone.View
             $(@el).find('.icon.replay').addClass('active') 
         , @
 
+        mediator.on 'pause', ->
+            @playing = no
+            $(@el).find('.icon.play').addClass('active') 
+            $(@el).find('.icon.pause').removeClass('active') 
+        , @
+
     # Play/pause.
     onPlay: (evt) ->
         return unless $(evt.target).hasClass 'active'

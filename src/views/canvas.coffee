@@ -37,7 +37,67 @@ class Canvas extends Backbone.View
             'zoom': 12
             'zoomControl': no
 
+        # When the user starts moving with the map.
+        @map.on 'movestart', =>
+            # TODO: skip if we are at the end.
+
+            # Pause the drawing.
+            mediator.trigger 'pause'
+
+            # Clear the frame.
+            # TODO: clear it completely, do not leave any white "gaps".
+            @frame yes
+
+        # When the user lets go of the map.
+        @map.on 'moveend', =>
+            # Nothing to update?
+            return unless @particles.length
+
+            # For all particles...
+            for particle in @particles
+                # Update the location of all particles.
+                particle.point = @position particle.l
+                # Force a re-draw without reducing ttl.
+                @draw particle
+        
+        # Add Stamen Toner tiles to the map.
         L.tileLayer.provider('Stamen.Toner').addTo @map
+
+    # Latitude/longitude to a canvas location.
+    position: (latLng) ->
+        @map.layerPointToContainerPoint @map.latLngToLayerPoint latLng
+
+    # Render a new frame.
+    frame: (reset=no)->
+        method = [ 'source-out', 'copy' ][+reset]
+
+        # Overlay previous frame.
+        @ctx.globalCompositeOperation = method
+        # Background opacity.
+        @ctx.fillStyle = "rgba(0,0,0,0.1)"
+        @ctx.fillRect 0, 0, config.window.width, config.window.height
+        # Blend the particles.
+        @ctx.globalCompositeOperation = 'darker'
+
+    # Draw a single particle.
+    draw: ({ point, color, ttl }) ->
+        # Skip if the location is off map.
+        return if point.x < 0 or point.y < 0
+
+        gradient = @ctx.createRadialGradient point.x, point.y, 0, point.x, point.y, ttl
+        gradient.addColorStop 0.0, "white"
+        gradient.addColorStop 0.8, "rgba(#{color},0.5)"
+        gradient.addColorStop 1.0, "black"
+
+        # Begin.
+        do @ctx.beginPath
+
+        @ctx.fillStyle = gradient
+        @ctx.arc point.x, point.y, ttl, 0, Math.PI * 2, no
+
+        # End.
+        do @ctx.closePath
+        do @ctx.fill
 
     # Play the show.
     play: ->
@@ -60,7 +120,7 @@ class Canvas extends Backbone.View
                     # How many ticks do I live for?
                     particle.ttl = 10
                     # Save the particle location.
-                    particle.point = @map.latLngToLayerPoint particle.l
+                    particle.point = @position particle.l
                     # The color?
                     particle.color = config.colors[particle.c].join(',')
                     # Add to the stack.
@@ -78,34 +138,12 @@ class Canvas extends Backbone.View
         # Meanwhile we are rendering the particles on canvas.
         @i2 = setInterval =>
 
-            # Disappear previous frame.
-            @ctx.globalCompositeOperation = "source-out"
-            # Background opacity.
-            @ctx.fillStyle = "rgba(0,0,0,0.1)"
-            @ctx.fillRect 0, 0, config.window.width, config.window.height
-            # Blend the particles.
-            @ctx.globalCompositeOperation = 'darker'
+            # Make a new frame.
+            do @frame
 
+            # Draw all particles and reduce their ttl.
             for particle in @particles
-                { point, color } = particle
-
-                rad = particle.ttl
-
-                gradient = @ctx.createRadialGradient point.x, point.y, 0, point.x, point.y, rad
-                gradient.addColorStop 0.0, "white"
-                gradient.addColorStop 0.8, "rgba(#{color},0.5)"
-                gradient.addColorStop 1.0, "black"
-
-                # Begin.
-                do @ctx.beginPath
-
-                @ctx.fillStyle = gradient
-                @ctx.arc point.x, point.y, rad, 0, Math.PI * 2, no
-
-                # End.
-                do @ctx.closePath
-                do @ctx.fill
-
+                @draw particle
                 # One tick less.
                 particle.ttl -= 0.1 if particle.ttl > 3
 
