@@ -498,8 +498,6 @@
       
         Canvas.prototype.stop = function() {
           this.pause();
-          this.particles = [];
-          this.index = 0;
           return mediator.trigger('stop');
         };
       
@@ -549,11 +547,15 @@
             return $(this.el).find('.icon.play').addClass('active');
           }, this);
           mediator.on('stop', function() {
+            this.playing = false;
             $(this.el).find('.icon.play').removeClass('active');
             $(this.el).find('.icon.pause').removeClass('active');
             return $(this.el).find('.icon.replay').addClass('active');
           }, this);
           mediator.on('pause', function() {
+            if (!this.playing) {
+              return;
+            }
             this.playing = false;
             $(this.el).find('.icon.play').addClass('active');
             return $(this.el).find('.icon.pause').removeClass('active');

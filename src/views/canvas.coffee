@@ -39,13 +39,10 @@ class Canvas extends Backbone.View
 
         # When the user starts moving with the map.
         @map.on 'movestart', =>
-            # TODO: skip if we are at the end.
-
             # Pause the drawing.
             mediator.trigger 'pause'
 
-            # Clear the frame.
-            # TODO: clear it completely, do not leave any white "gaps".
+            # Clear the frame, completely.
             @frame yes
 
         # When the user lets go of the map.
@@ -156,8 +153,6 @@ class Canvas extends Backbone.View
     # Stop the show.
     stop: ->
         do @pause
-        @particles = []
-        @index = 0
         # Change controls.
         mediator.trigger 'stop'
 
