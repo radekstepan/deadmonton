@@ -4,8 +4,6 @@ class Controls extends Backbone.View
 
     el: '#controls'
 
-    template: require '../templates/controls'
-
     events:
         'click .icon.play': 'onPlay'
         'click .icon.pause': 'onPlay'
@@ -65,9 +63,6 @@ class Controls extends Backbone.View
         mediator.trigger 'replay'
         mediator.trigger 'play'
 
-    render: ->
-        $(@el).html do @template
-
-        @
+    render: -> @
 
 module.exports = Controls

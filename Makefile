@@ -1,5 +1,8 @@
-build:
+install:
+	npm install
 	bower install
+
+build:
 	grunt
 
 minify:

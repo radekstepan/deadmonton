@@ -15,6 +15,9 @@ class Canvas extends Backbone.View
         canvas = document.getElementById("canvas")
         @ctx = canvas.getContext("2d")
 
+        # Blend the particles.
+        @ctx.globalCompositeOperation = 'darker'
+
         # Canvas size.
         $('#canvas')
         .attr('width', config.window.width)
@@ -43,8 +46,8 @@ class Canvas extends Backbone.View
             # Pause the drawing.
             mediator.trigger 'pause'
 
-            # Clear the frame, completely.
-            @frame yes
+            # Clear the frame.
+            do @clear
 
         # When the user lets go of the map.
         @map.on 'moveend', =>
@@ -65,17 +68,9 @@ class Canvas extends Backbone.View
     position: (latLng) ->
         @map.layerPointToContainerPoint @map.latLngToLayerPoint latLng
 
-    # Render a new frame.
-    frame: (reset=no)->
-        method = [ 'source-out', 'copy' ][+reset]
-
-        # Overlay previous frame.
-        @ctx.globalCompositeOperation = method
-        # Background opacity.
-        @ctx.fillStyle = "rgba(0,0,0,0.1)"
-        @ctx.fillRect 0, 0, config.window.width, config.window.height
-        # Blend the particles.
-        @ctx.globalCompositeOperation = 'darker'
+    # Clear the frame.
+    clear: ->
+        @ctx.clearRect 0, 0, config.window.width, config.window.height
 
     # Draw a single particle.
     draw: (particle) =>
@@ -146,8 +141,8 @@ class Canvas extends Backbone.View
         # Meanwhile we are rendering the particles on canvas.
         @i2 = setInterval =>
 
-            # Make a new frame.
-            do @frame
+            # Clear the frame.
+            do @clear
 
             # Draw all particles and reduce their ttl.
             for particle in @particles
@@ -187,8 +182,8 @@ class Canvas extends Backbone.View
     redraw: ->
         return if @playing
 
-        # Reset the frame.
-        @frame yes
+        # Clear the frame.
+        do @clear
 
         # Force re-draw.
         _.each @particles, @draw

@@ -877,7 +877,7 @@ html,body{height:100%}
 #canvas{position:absolute;top:0;left:0;pointer-events:none}
 .box{position:absolute;z-index:2;padding:2px 4px;color:#333;background:rgba(255,255,255,0.7);-webkit-box-shadow:0 0 5px #bbb;box-shadow:0 0 5px #bbb}
 #date{top:0;right:0;font-size:20px}
-#loading{top:50%;left:50%;font-size:20px}
+#loading{top:40%;left:50%;font-size:20px;padding:4px 10px;font-weight:bold}
 #controls{top:0;left:0;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;}
 #controls .icon{opacity:.5;-ms-filter:"progid:DXImageTransform.Microsoft.Alpha(Opacity=50)";filter:alpha(opacity=50);width:32px;height:32px;display:inline-block;}
 #controls .icon.active{opacity:1;-ms-filter:none;filter:none;cursor:pointer}

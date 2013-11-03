@@ -24787,59 +24787,6 @@ this.LZMA = LZMA;
     });
 
     
-    // controls.eco
-    require.register('deadmonton/src/templates/controls.js', function(exports, require, module) {
-    
-      module.exports = function(__obj) {
-        if (!__obj) __obj = {};
-        var __out = [], __capture = function(callback) {
-          var out = __out, result;
-          __out = [];
-          callback.call(this);
-          result = __out.join('');
-          __out = out;
-          return __safe(result);
-        }, __sanitize = function(value) {
-          if (value && value.ecoSafe) {
-            return value;
-          } else if (typeof value !== 'undefined' && value != null) {
-            return __escape(value);
-          } else {
-            return '';
-          }
-        }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
-        __safe = __obj.safe = function(value) {
-          if (value && value.ecoSafe) {
-            return value;
-          } else {
-            if (!(typeof value !== 'undefined' && value != null)) value = '';
-            var result = new String(value);
-            result.ecoSafe = true;
-            return result;
-          }
-        };
-        if (!__escape) {
-          __escape = __obj.escape = function(value) {
-            return ('' + value)
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;');
-          };
-        }
-        (function() {
-          (function() {
-            __out.push('<span class="icon replay"></span>\n<span class="icon play"></span>\n<span class="icon pause"></span>');
-          
-          }).call(this);
-          
-        }).call(__obj);
-        __obj.safe = __objSafe, __obj.escape = __escape;
-        return __out.join('');
-      }
-    });
-
-    
     // layout.eco
     require.register('deadmonton/src/templates/layout.js', function(exports, require, module) {
     
@@ -24882,7 +24829,7 @@ this.LZMA = LZMA;
         }
         (function() {
           (function() {
-            __out.push('<div id="map"></div>\n<canvas id="canvas"></canvas>\n<div id="controls" class="box"></div>\n<div id="date" class="box"></div>\n<ul id="categories" class="box"></ul>\n<div id="loading" class="box">Loading &hellip;</div>');
+            __out.push('<div id="map"></div>\n<canvas id="canvas"></canvas>\n\n<div id="controls" class="box">\n    <span class="icon replay"></span>\n    <span class="icon play"></span>\n    <span class="icon pause"></span>\n</div>\n<div id="date" class="box"></div>\n<ul id="categories" class="box"></ul>\n\n<div id="loading" class="box">Loading &hellip;</div>');
           
           }).call(this);
           
@@ -24917,6 +24864,7 @@ this.LZMA = LZMA;
           this.reset();
           canvas = document.getElementById("canvas");
           this.ctx = canvas.getContext("2d");
+          this.ctx.globalCompositeOperation = 'darker';
           $('#canvas').attr('width', config.window.width).attr('height', config.window.height);
           mediator.on('play', this.play, this);
           mediator.on('pause', this.pause, this);
@@ -24934,7 +24882,7 @@ this.LZMA = LZMA;
           });
           this.map.on('movestart', function() {
             mediator.trigger('pause');
-            return _this.frame(true);
+            return _this.clear();
           });
           this.map.on('moveend', function() {
             var particle, _i, _len, _ref, _results;
@@ -24957,16 +24905,8 @@ this.LZMA = LZMA;
           return this.map.layerPointToContainerPoint(this.map.latLngToLayerPoint(latLng));
         };
       
-        Canvas.prototype.frame = function(reset) {
-          var method;
-          if (reset == null) {
-            reset = false;
-          }
-          method = ['source-out', 'copy'][+reset];
-          this.ctx.globalCompositeOperation = method;
-          this.ctx.fillStyle = "rgba(0,0,0,0.1)";
-          this.ctx.fillRect(0, 0, config.window.width, config.window.height);
-          return this.ctx.globalCompositeOperation = 'darker';
+        Canvas.prototype.clear = function() {
+          return this.ctx.clearRect(0, 0, config.window.width, config.window.height);
         };
       
         Canvas.prototype.draw = function(particle) {
@@ -25017,7 +24957,7 @@ this.LZMA = LZMA;
           }, 2e2);
           return this.i2 = setInterval(function() {
             var particle, _i, _len, _ref, _results;
-            _this.frame();
+            _this.clear();
             _ref = _this.particles;
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
@@ -25057,7 +24997,7 @@ this.LZMA = LZMA;
           if (this.playing) {
             return;
           }
-          this.frame(true);
+          this.clear();
           return _.each(this.particles, this.draw);
         };
       
@@ -25139,8 +25079,6 @@ this.LZMA = LZMA;
       
         Controls.prototype.el = '#controls';
       
-        Controls.prototype.template = require('../templates/controls');
-      
         Controls.prototype.events = {
           'click .icon.play': 'onPlay',
           'click .icon.pause': 'onPlay',
@@ -25192,7 +25130,6 @@ this.LZMA = LZMA;
         };
       
         Controls.prototype.render = function() {
-          $(this.el).html(this.template());
           return this;
         };
       

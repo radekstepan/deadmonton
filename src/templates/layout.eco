@@ -1,6 +1,12 @@
 <div id="map"></div>
 <canvas id="canvas"></canvas>
-<div id="controls" class="box"></div>
+
+<div id="controls" class="box">
+    <span class="icon replay"></span>
+    <span class="icon play"></span>
+    <span class="icon pause"></span>
+</div>
 <div id="date" class="box"></div>
 <ul id="categories" class="box"></ul>
+
 <div id="loading" class="box">Loading &hellip;</div>
