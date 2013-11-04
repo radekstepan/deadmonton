@@ -34,3 +34,7 @@ module.exports =
     'window':
         'width':  do $(window).width
         'height': do $(window).height
+
+    # Center of the map.
+    'center':
+        [ 53.5501, -113.5049 ]

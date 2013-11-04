@@ -24647,20 +24647,6 @@ this.LZMA = LZMA;
   (function() {
     
     
-    // app.coffee
-    require.register('deadmonton/src/app.js', function(exports, require, module) {
-    
-      var Layout;
-      
-      Layout = require('./views/layout');
-      
-      module.exports = function() {
-        return (new Layout()).render();
-      };
-      
-    });
-
-    
     // config.coffee
     require.register('deadmonton/src/config.js', function(exports, require, module) {
     
@@ -24702,7 +24688,8 @@ this.LZMA = LZMA;
         'window': {
           'width': $(window).width(),
           'height': $(window).height()
-        }
+        },
+        'center': [53.5501, -113.5049]
       };
       
     });
@@ -24712,6 +24699,39 @@ this.LZMA = LZMA;
     require.register('deadmonton/src/modules/mediator.js', function(exports, require, module) {
     
       module.exports = _.extend({}, Backbone.Events);
+      
+    });
+
+    
+    // view.coffee
+    require.register('deadmonton/src/modules/view.js', function(exports, require, module) {
+    
+      var View,
+        __hasProp = {}.hasOwnProperty,
+        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+      
+      View = (function(_super) {
+        __extends(View, _super);
+      
+        View.prototype.autorender = false;
+      
+        function View() {
+          View.__super__.constructor.apply(this, arguments);
+          this.views = [];
+          if (this.autorender) {
+            this.render();
+          }
+        }
+      
+        View.prototype.render = function() {
+          return this;
+        };
+      
+        return View;
+      
+      })(Backbone.View);
+      
+      module.exports = View;
       
     });
 
@@ -24758,25 +24778,13 @@ this.LZMA = LZMA;
         }
         (function() {
           (function() {
-            __out.push('<li data-category="');
-          
-            __out.push(__sanitize(this.name));
-          
-            __out.push('" class="');
-          
-            if (this.active) {
-              __out.push('active');
-            }
-          
-            __out.push('">\n    <span class="circle" style="background:rgb(');
+            __out.push('<span class="circle" style="background:rgb(');
           
             __out.push(__sanitize(this.rgb));
           
             __out.push(')"></span> ');
           
             __out.push(__sanitize(this.name));
-          
-            __out.push('\n</li>');
           
           }).call(this);
           
@@ -24840,15 +24848,77 @@ this.LZMA = LZMA;
     });
 
     
+    // app.coffee
+    require.register('deadmonton/src/views/app.js', function(exports, require, module) {
+    
+      var App, Canvas, Categories, Controls, View, mediator,
+        __hasProp = {}.hasOwnProperty,
+        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+      
+      View = require('../modules/view');
+      
+      mediator = require('../modules/mediator');
+      
+      Controls = require('./controls');
+      
+      Categories = require('./categories');
+      
+      Canvas = require('./canvas');
+      
+      App = (function(_super) {
+        __extends(App, _super);
+      
+        App.prototype.el = 'body';
+      
+        App.prototype.autorender = true;
+      
+        App.prototype.template = require('../templates/layout');
+      
+        function App() {
+          App.__super__.constructor.apply(this, arguments);
+          this.views = [];
+          mediator.on('loaded', function() {
+            return $(this.el).find('#loading').hide();
+          }, this);
+          $.get('crime.json.lzma', function(i) {
+            return LZMA.decompress(i.split(','), function(o) {
+              var collection;
+              collection = JSON.parse(o);
+              new Canvas({
+                collection: collection
+              });
+              return mediator.trigger('loaded');
+            });
+          });
+        }
+      
+        App.prototype.render = function() {
+          $(this.el).html(this.template());
+          new Controls();
+          new Categories();
+          return this;
+        };
+      
+        return App;
+      
+      })(View);
+      
+      module.exports = App;
+      
+    });
+
+    
     // canvas.coffee
     require.register('deadmonton/src/views/canvas.js', function(exports, require, module) {
     
-      var Canvas, config, mediator,
+      var Canvas, View, config, mediator,
         __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
         __hasProp = {}.hasOwnProperty,
         __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
       
       config = require('../config');
+      
+      View = require('../modules/view');
       
       mediator = require('../modules/mediator');
       
@@ -24857,13 +24927,13 @@ this.LZMA = LZMA;
       
         Canvas.prototype.el = '#map';
       
+        Canvas.prototype.autorender = true;
+      
         function Canvas() {
           this.draw = __bind(this.draw, this);
-          var canvas;
           Canvas.__super__.constructor.apply(this, arguments);
           this.reset();
-          canvas = document.getElementById("canvas");
-          this.ctx = canvas.getContext("2d");
+          this.ctx = document.getElementById("canvas").getContext("2d");
           this.ctx.globalCompositeOperation = 'darker';
           $('#canvas').attr('width', config.window.width).attr('height', config.window.height);
           mediator.on('play', this.play, this);
@@ -24873,32 +24943,34 @@ this.LZMA = LZMA;
         }
       
         Canvas.prototype.render = function() {
-          var _this = this;
+          var a, b, _ref,
+            _this = this;
           $(this.el).css('width', "" + config.window.width + "px").css('height', "" + config.window.height + "px");
+          _ref = config.center, a = _ref[0], b = _ref[1];
           this.map = new L.Map('map', {
-            'center': new L.LatLng(53.5501, -113.5049),
+            'center': new L.LatLng(a, b),
             'zoom': 12,
             'zoomControl': false
           });
+          L.tileLayer.provider('Stamen.Toner').addTo(this.map);
           this.map.on('movestart', function() {
             mediator.trigger('pause');
             return _this.clear();
           });
-          this.map.on('moveend', function() {
-            var particle, _i, _len, _ref, _results;
+          return this.map.on('moveend', function() {
+            var particle, _i, _len, _ref1, _results;
             if (!_this.particles.length) {
               return;
             }
-            _ref = _this.particles;
+            _ref1 = _this.particles;
             _results = [];
-            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-              particle = _ref[_i];
+            for (_i = 0, _len = _ref1.length; _i < _len; _i++) {
+              particle = _ref1[_i];
               particle.point = _this.position(particle.l);
               _results.push(_this.draw(particle));
             }
             return _results;
           });
-          return L.tileLayer.provider('Stamen.Toner').addTo(this.map);
         };
       
         Canvas.prototype.position = function(latLng) {
@@ -24980,7 +25052,6 @@ this.LZMA = LZMA;
       
         Canvas.prototype.stop = function() {
           this.pause();
-          this.playing = false;
           return mediator.trigger('stop');
         };
       
@@ -24989,8 +25060,7 @@ this.LZMA = LZMA;
           this.now = moment(new Date(this.collection[0].t));
           this.end = moment(new Date(this.collection[this.collection.length - 1].t));
           this.particles = [];
-          this.index = 0;
-          return this.playing = false;
+          return this.index = 0;
         };
       
         Canvas.prototype.redraw = function() {
@@ -25003,7 +25073,7 @@ this.LZMA = LZMA;
       
         return Canvas;
       
-      })(Backbone.View);
+      })(View);
       
       module.exports = Canvas;
       
@@ -25013,54 +25083,102 @@ this.LZMA = LZMA;
     // categories.coffee
     require.register('deadmonton/src/views/categories.js', function(exports, require, module) {
     
-      var Categories, config, mediator,
+      var Categories, Category, View, config,
         __hasProp = {}.hasOwnProperty,
         __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
       
-      mediator = require('../modules/mediator');
+      View = require('../modules/view');
       
       config = require('../config');
+      
+      Category = require('./category');
       
       Categories = (function(_super) {
         __extends(Categories, _super);
       
         Categories.prototype.el = '#categories';
       
-        Categories.prototype.template = require('../templates/category');
-      
-        Categories.prototype.events = {
-          'click li': 'onToggle'
-        };
+        Categories.prototype.autorender = true;
       
         function Categories() {
           Categories.__super__.constructor.apply(this, arguments);
         }
       
         Categories.prototype.render = function() {
-          var data, name, _ref;
+          var data, name, view, _ref;
           _ref = config.categories;
           for (name in _ref) {
             data = _ref[name];
-            $(this.el).append(this.template(_.extend(data, {
-              name: name
-            })));
+            this.views.push(view = new Category({
+              'model': _.extend(data, {
+                name: name
+              })
+            }));
+            $(this.el).append(view.el);
           }
           return this;
         };
       
-        Categories.prototype.onToggle = function(evt) {
-          var el, ref;
-          ref = config.categories[(el = $(evt.target)).data('category')];
-          ref.active = !ref.active;
-          el.toggleClass('active');
+        return Categories;
+      
+      })(View);
+      
+      module.exports = Categories;
+      
+    });
+
+    
+    // category.coffee
+    require.register('deadmonton/src/views/category.js', function(exports, require, module) {
+    
+      var Category, View, config, mediator, _ref,
+        __hasProp = {}.hasOwnProperty,
+        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+      
+      View = require('../modules/view');
+      
+      mediator = require('../modules/mediator');
+      
+      config = require('../config');
+      
+      Category = (function(_super) {
+        __extends(Category, _super);
+      
+        function Category() {
+          _ref = Category.__super__.constructor.apply(this, arguments);
+          return _ref;
+        }
+      
+        Category.prototype.autorender = true;
+      
+        Category.prototype.tagName = 'li';
+      
+        Category.prototype.template = require('../templates/category');
+      
+        Category.prototype.events = {
+          'click': 'onToggle'
+        };
+      
+        Category.prototype.render = function() {
+          var el;
+          (el = $(this.el)).html(this.template(this.model));
+          if (this.model.active) {
+            el.addClass('active');
+          }
+          return this;
+        };
+      
+        Category.prototype.onToggle = function() {
+          $(this.el).toggleClass('active');
+          this.model.active = !this.model.active;
           return mediator.trigger('redraw');
         };
       
-        return Categories;
+        return Category;
       
-      })(Backbone.View);
+      })(View);
       
-      module.exports = Categories;
+      module.exports = Category;
       
     });
 
@@ -25068,9 +25186,11 @@ this.LZMA = LZMA;
     // controls.coffee
     require.register('deadmonton/src/views/controls.js', function(exports, require, module) {
     
-      var Controls, mediator,
+      var Controls, View, mediator,
         __hasProp = {}.hasOwnProperty,
         __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+      
+      View = require('../modules/view');
       
       mediator = require('../modules/mediator');
       
@@ -25079,49 +25199,31 @@ this.LZMA = LZMA;
       
         Controls.prototype.el = '#controls';
       
+        Controls.prototype.autorender = true;
+      
         Controls.prototype.events = {
-          'click .icon.play': 'onPlay',
-          'click .icon.pause': 'onPlay',
-          'click .icon.replay': 'onReplay'
+          'click .icon.play.active': 'onPlay',
+          'click .icon.pause.active': 'onPlay',
+          'click .icon.replay.active': 'onReplay'
         };
+      
+        Controls.prototype.playing = false;
       
         function Controls() {
           Controls.__super__.constructor.apply(this, arguments);
-          this.playing = false;
-          mediator.on('loaded', function() {
-            return $(this.el).find('.icon.play').addClass('active');
-          }, this);
-          mediator.on('stop', function() {
-            this.playing = false;
-            $(this.el).find('.icon.play').removeClass('active');
-            $(this.el).find('.icon.pause').removeClass('active');
-            return $(this.el).find('.icon.replay').addClass('active');
-          }, this);
-          mediator.on('pause', function() {
-            if (!this.playing) {
-              return;
-            }
-            this.playing = false;
-            $(this.el).find('.icon.play').addClass('active');
-            return $(this.el).find('.icon.pause').removeClass('active');
-          }, this);
+          mediator.on('loaded', this.onReady, this);
+          mediator.on('stop', this.onStop, this);
+          mediator.on('pause', this.onPause, this);
         }
       
         Controls.prototype.onPlay = function(evt) {
-          if (!$(evt.target).hasClass('active')) {
-            return;
-          }
           $(this.el).find('.play, .pause').toggleClass('active');
           this.playing = !this.playing;
-          mediator.trigger(['pause', 'play'][+this.playing]);
-          return $(this.el).find('.replay').addClass('active');
+          $(this.el).find('.replay').addClass('active');
+          return mediator.trigger(['pause', 'play'][+this.playing]);
         };
       
         Controls.prototype.onReplay = function(evt) {
-          var el;
-          if (!(el = $(evt.target)).hasClass('active')) {
-            return;
-          }
           this.playing = true;
           $(this.el).find('.play').removeClass('active');
           $(this.el).find('.pause').addClass('active');
@@ -25129,86 +25231,47 @@ this.LZMA = LZMA;
           return mediator.trigger('play');
         };
       
-        Controls.prototype.render = function() {
-          return this;
+        Controls.prototype.onReady = function() {
+          return $(this.el).find('.icon.play').addClass('active');
+        };
+      
+        Controls.prototype.onStop = function() {
+          this.playing = false;
+          $(this.el).find('.icon.play, .icon.pause').removeClass('active');
+          return $(this.el).find('.icon.replay').addClass('active');
+        };
+      
+        Controls.prototype.onPause = function() {
+          if (!this.playing) {
+            return;
+          }
+          this.playing = false;
+          $(this.el).find('.icon.play').addClass('active');
+          return $(this.el).find('.icon.pause').removeClass('active');
         };
       
         return Controls;
       
-      })(Backbone.View);
+      })(View);
       
       module.exports = Controls;
-      
-    });
-
-    
-    // layout.coffee
-    require.register('deadmonton/src/views/layout.js', function(exports, require, module) {
-    
-      var Canvas, Categories, Controls, Layout, mediator,
-        __hasProp = {}.hasOwnProperty,
-        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-      
-      mediator = require('../modules/mediator');
-      
-      Controls = require('./controls');
-      
-      Categories = require('./categories');
-      
-      Canvas = require('./canvas');
-      
-      Layout = (function(_super) {
-        __extends(Layout, _super);
-      
-        Layout.prototype.el = 'body';
-      
-        Layout.prototype.template = require('../templates/layout');
-      
-        function Layout() {
-          Layout.__super__.constructor.apply(this, arguments);
-          this.views = [];
-          mediator.on('loaded', function() {
-            return $(this.el).find('#loading').hide();
-          }, this);
-          $.get('data/crime.json.lzma', function(i) {
-            return LZMA.decompress(i.split(','), function(o) {
-              var collection;
-              collection = JSON.parse(o);
-              (new Canvas({
-                collection: collection
-              })).render();
-              return mediator.trigger('loaded');
-            });
-          });
-        }
-      
-        Layout.prototype.render = function() {
-          $(this.el).html(this.template());
-          (new Controls()).render();
-          (new Categories()).render();
-          return this;
-        };
-      
-        return Layout;
-      
-      })(Backbone.View);
-      
-      module.exports = Layout;
       
     });
   })();
 
   // Return the main app.
-  var main = require("deadmonton/src/app.js");
+  var main = require("deadmonton/src/views/app.js");
 
   // Global on server, window in browser.
   var root = this;
 
   // AMD/RequireJS.
   if (typeof define !== 'undefined' && define.amd) {
+  
     define("deadmonton", [ /* load deps ahead of time */ ], function () {
       return main;
     });
+  
   }
 
   // CommonJS.
@@ -25218,11 +25281,15 @@ this.LZMA = LZMA;
 
   // Globally exported.
   else {
+  
     root["deadmonton"] = main;
+  
   }
 
   // Alias our app.
-  require.alias("deadmonton/src/app.js", "deadmonton/index.js");
+  
+  require.alias("deadmonton/src/views/app.js", "deadmonton/index.js");
+  
 
   // Export internal loader?
   root.require = (typeof root.require !== 'undefined') ? root.require : require;

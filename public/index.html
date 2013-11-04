@@ -5,15 +5,15 @@
     
     <title>Welcome to Deadmonton</title>
 
-    <script src="build/app.bundle.js"></script>
-
+    <link rel="stylesheet" type="text/css" href="app.bundle.css">
+    
+    <script src="app.bundle.js"></script>
     <script>
     $(function() {
-        require('deadmonton').call(this);
+        var App = require('deadmonton');
+        new App();
     });
     </script>
-
-    <link rel="stylesheet" type="text/css" href="build/app.bundle.css">
 </head>
 <body></body>
 </html>

@@ -7,7 +7,7 @@ module.exports = (grunt) ->
                 src: [ 'src/**/*.{coffee,js,eco}' ]
                 dest: 'build/app.js'
                 options:
-                    main: 'src/app.coffee'
+                    main: 'src/views/app.coffee'
                     name: 'deadmonton'
 
         stylus:

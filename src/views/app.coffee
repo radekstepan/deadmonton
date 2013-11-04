@@ -1,12 +1,15 @@
+View       = require '../modules/view'
 mediator   = require '../modules/mediator'
 
 Controls   = require './controls'
 Categories = require './categories'
 Canvas     = require './canvas'
 
-class Layout extends Backbone.View
+class App extends View
 
     el: 'body'
+
+    autorender: yes
 
     template: require '../templates/layout'
 
@@ -20,21 +23,23 @@ class Layout extends Backbone.View
         , @
 
         # Get the data.
-        $.get 'data/crime.json.lzma', (i) ->
+        $.get 'crime.json.lzma', (i) ->
+            # Decompress it.
             LZMA.decompress i.split(','), (o) ->
 
                 collection = JSON.parse o
                 
-                do (new Canvas({ collection })).render
+                # Render the canvas and say we are ready.
+                new Canvas({ collection })
                 mediator.trigger 'loaded'
 
     render: ->
         $(@el).html do @template
         
         # Add map controls.
-        do (new Controls()).render
-        do (new Categories()).render
+        new Controls()
+        new Categories()
 
         @
 
-module.exports = Layout
+module.exports = App

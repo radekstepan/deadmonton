@@ -1,9 +1,12 @@
 config   = require '../config'
+View     = require '../modules/view'
 mediator = require '../modules/mediator'
 
-class Canvas extends Backbone.View
+class Canvas extends View
 
     el: '#map'
+
+    autorender: yes
 
     constructor: ->
         super
@@ -11,14 +14,15 @@ class Canvas extends Backbone.View
         # Set/reset.
         do @reset
 
-        # Select the canvas.
-        canvas = document.getElementById("canvas")
-        @ctx = canvas.getContext("2d")
+        # Select the canvas context.
+        @ctx = document
+        .getElementById("canvas")
+        .getContext("2d")
 
         # Blend the particles.
         @ctx.globalCompositeOperation = 'darker'
 
-        # Canvas size.
+        # Set canvas size.
         $('#canvas')
         .attr('width', config.window.width)
         .attr('height', config.window.height)
@@ -31,16 +35,23 @@ class Canvas extends Backbone.View
 
     # Center map over Edmonton.
     render: ->
-        # Set size.
+        # Set size of the div.
         $(@el)
         .css('width', "#{config.window.width}px")
         .css('height', "#{config.window.height}px")
 
+        # Where to center?
+        [ a, b ] = config.center
+
+        # New map.
         @map = new L.Map 'map',
-            'center': new L.LatLng(53.5501, -113.5049),
+            'center': new L.LatLng(a, b),
             'zoom': 12
             'zoomControl': no
 
+        # Add Stamen Toner tiles to the map.
+        L.tileLayer.provider('Stamen.Toner').addTo @map
+        
         # When the user starts moving with the map.
         @map.on 'movestart', =>
             # Pause the drawing.
@@ -51,7 +62,7 @@ class Canvas extends Backbone.View
 
         # When the user lets go of the map.
         @map.on 'moveend', =>
-            # Nothing to update?
+            # Nothing to update? Skip then.
             return unless @particles.length
 
             # For all particles...
@@ -60,15 +71,13 @@ class Canvas extends Backbone.View
                 particle.point = @position particle.l
                 # Force a re-draw without reducing ttl.
                 @draw particle
-        
-        # Add Stamen Toner tiles to the map.
-        L.tileLayer.provider('Stamen.Toner').addTo @map
 
-    # Latitude/longitude to a canvas location.
+    # Convert latitude/longitude to a canvas location.
     position: (latLng) ->
         @map.layerPointToContainerPoint @map.latLngToLayerPoint latLng
 
     # Clear the frame.
+    # This method works best cross-browser.
     clear: ->
         @ctx.clearRect 0, 0, config.window.width, config.window.height
 
@@ -82,6 +91,7 @@ class Canvas extends Backbone.View
         # Skip if our category is not toggled.
         return unless config.categories[particle.c].active
 
+        # How big are we going to get?
         radius = ttl * 0.1 * do @map.getZoom
 
         # Make the gradient.
@@ -93,6 +103,7 @@ class Canvas extends Backbone.View
         # Begin.
         do @ctx.beginPath
 
+        # Make/fill a circle.
         @ctx.fillStyle = gradient
         @ctx.arc point.x, point.y, radius, 0, Math.PI * 2, no
 
@@ -102,8 +113,10 @@ class Canvas extends Backbone.View
 
     # Play the show.
     play: ->
+        # We are active.
         @playing = yes
 
+        # Update this with new date.
         date = $('#date')
 
         # Range replay.
@@ -155,17 +168,19 @@ class Canvas extends Backbone.View
     # Clear the timeouts for a while.
     pause: ->
         @playing = no
+        # Stop the show.
         _.each [ @i1, @i2 ], clearInterval
 
     # Stop the show.
     stop: ->
+        # Stop the show
         do @pause
-        @playing = no
         # Change controls.
         mediator.trigger 'stop'
 
     # Replay.
     reset: ->
+        # Stop the show.
         do @pause
 
         # The time range.
@@ -174,9 +189,8 @@ class Canvas extends Backbone.View
         
         # The particles.
         @particles = []
+        # Index in the underlying collection.
         @index = 0
-
-        @playing = no
 
     # When we toggle a category.
     redraw: ->

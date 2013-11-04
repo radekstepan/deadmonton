@@ -1,29 +1,25 @@
-mediator = require '../modules/mediator'
+View     = require '../modules/view'
 config   = require '../config'
 
-class Categories extends Backbone.View
+Category = require './category'
+
+class Categories extends View
 
     el: '#categories'
 
-    template: require '../templates/category'
-
-    events:
-        'click li': 'onToggle'
+    autorender: yes
 
     constructor: ->
         super
 
     render: ->
+        # Render a list of categories as subviews.
         for name, data of config.categories
-            $(@el).append @template _.extend data, { name }
+            @views.push view = new Category({
+                'model': _.extend data, { name }
+            })
+            $(@el).append view.el
 
         @
-
-    onToggle: (evt) ->
-        ref = config.categories[(el = $(evt.target)).data('category')]
-        ref.active = !ref.active
-        el.toggleClass('active')
-
-        mediator.trigger('redraw')
 
 module.exports = Categories

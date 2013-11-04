@@ -12,7 +12,7 @@ watch:
 	watch --color -n 1 make build
 
 serve:
-	python -m SimpleHTTPServer 1892
+	cd public; python -m SimpleHTTPServer 1892
 
 fetch:
 	npm install

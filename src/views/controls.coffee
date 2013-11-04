@@ -1,68 +1,81 @@
+View     = require '../modules/view'
 mediator = require '../modules/mediator'
 
-class Controls extends Backbone.View
+class Controls extends View
 
     el: '#controls'
 
+    autorender: yes
+
+    # Mouse clicks.
     events:
-        'click .icon.play': 'onPlay'
-        'click .icon.pause': 'onPlay'
-        'click .icon.replay': 'onReplay'
+        'click .icon.play.active': 'onPlay'
+        'click .icon.pause.active': 'onPlay'
+        'click .icon.replay.active': 'onReplay'
+
+    # We do not autostart.
+    playing: no
 
     constructor: ->
         super
 
-        # We do not autostart.
-        @playing = no
-
         # Enable play button when loaded.
-        mediator.on 'loaded', ->
-            $(@el).find('.icon.play').addClass('active')
-        , @
+        mediator.on 'loaded', @onReady, @
 
-        mediator.on 'stop', ->
-            @playing = no
+        # No moar data.
+        mediator.on 'stop', @onStop, @
 
-            $(@el).find('.icon.play').removeClass('active') 
-            $(@el).find('.icon.pause').removeClass('active') 
-            $(@el).find('.icon.replay').addClass('active') 
-        , @
+        # When we pan/zoom the map.
+        mediator.on 'pause', @onPause, @
 
-        mediator.on 'pause', ->
-            return unless @playing
-            
-            @playing = no
-            
-            $(@el).find('.icon.play').addClass('active') 
-            $(@el).find('.icon.pause').removeClass('active') 
-        , @
-
-    # Play/pause.
+    # Clicking the play/pause button.
     onPlay: (evt) ->
-        return unless $(evt.target).hasClass 'active'
-
         # Toggle buttons.
         $(@el).find('.play, .pause').toggleClass('active')
         # Toggle state.
         @playing = !@playing
 
-        # Trigger event.
-        mediator.trigger [ 'pause', 'play' ][+@playing]
-
-        # We can rewind now.
+        # We can rewind now as we have most def moved in time.
         $(@el).find('.replay').addClass('active')
 
-    onReplay: (evt) ->
-        return unless (el = $(evt.target)).hasClass 'active'
+        # Trigger the appropriate event.
+        mediator.trigger [ 'pause', 'play' ][+@playing]
 
+    # Starting all over again.
+    onReplay: (evt) ->
+        # Definitely playing.
         @playing = yes
 
+        # The initial state.
         $(@el).find('.play').removeClass('active')
         $(@el).find('.pause').addClass('active')
 
+        # Reset the data.
         mediator.trigger 'replay'
+        # Play them again.
         mediator.trigger 'play'
 
-    render: -> @
+    # Enable play button when data has loaded.
+    onReady: ->
+        $(@el).find('.icon.play').addClass('active')
+
+    # When we run out of data to show.
+    onStop: ->
+        # Not playing.
+        @playing = no
+
+        # The end state, only play is active.
+        $(@el).find('.icon.play, .icon.pause').removeClass('active')
+        $(@el).find('.icon.replay').addClass('active')
+
+    # We have pause through no fault of out own.
+    onPause: ->
+        return unless @playing
+        
+        # Not playing.
+        @playing = no
+        
+        $(@el).find('.icon.play').addClass('active') 
+        $(@el).find('.icon.pause').removeClass('active') 
 
 module.exports = Controls
