@@ -1,15 +1,15 @@
 {
     "name": "deadmonton",
-    "version": "0.0.0",
+    "version": "0.0.2",
     "dependencies": {
-        "async": null,
-        "backbone": null,
-        "jquery": null,
-        "leaflet-dist": null,
-        "leaflet-providers": null,
+        "async": "0.2.5",
+        "backbone": "1.1.0",
+        "jquery": "2.0.3",
+        "leaflet-dist": "0.6.4",
+        "leaflet-providers": "1.0.1",
         "lzma-js": "https://raw.github.com/nmrugg/LZMA-JS/master/src/lzma_worker.js",
-        "lodash": null,
-        "moment": null,
-        "normalize-css": null
+        "lodash": "2.3.0",
+        "moment": "2.4.0",
+        "normalize-css": "2.1.3"
     }
 }
