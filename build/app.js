@@ -6,7 +6,7 @@
    * @return {Object} exports
    * @api public
    */
-  function require(path, parent, orig) {
+  var require = function(path, parent, orig) {
     var resolved = require.resolve(path);
 
     // lookup failed
@@ -164,7 +164,7 @@
      * The relative require() itself.
      */
 
-    function localRequire(path) {
+    var localRequire = function(path) {
       var resolved = localRequire.resolve(path);
       return require(resolved, parent, path);
     }
@@ -202,14 +202,14 @@
   var root = this;
 
   // Do we already have require loader?
-  root.require = require = (typeof root.require !== 'undefined') ? root.require : require;
+  root.require = (typeof root.require !== 'undefined') ? root.require : require;
 
-  // All our modules will see our own require.
+  // All our modules will use global require.
   (function() {
     
     
     // config.coffee
-    require.register('deadmonton/src/config.js', function(exports, require, module) {
+    root.require.register('deadmonton/src/config.js', function(exports, require, module) {
     
       module.exports = {
         'categories': {
@@ -257,7 +257,7 @@
 
     
     // mediator.coffee
-    require.register('deadmonton/src/modules/mediator.js', function(exports, require, module) {
+    root.require.register('deadmonton/src/modules/mediator.js', function(exports, require, module) {
     
       module.exports = _.extend({}, Backbone.Events);
       
@@ -265,7 +265,7 @@
 
     
     // view.coffee
-    require.register('deadmonton/src/modules/view.js', function(exports, require, module) {
+    root.require.register('deadmonton/src/modules/view.js', function(exports, require, module) {
     
       var View,
         __hasProp = {}.hasOwnProperty,
@@ -298,7 +298,7 @@
 
     
     // category.eco
-    require.register('deadmonton/src/templates/category.js', function(exports, require, module) {
+    root.require.register('deadmonton/src/templates/category.js', function(exports, require, module) {
     
       module.exports = function(__obj) {
         if (!__obj) __obj = {};
@@ -357,7 +357,7 @@
 
     
     // layout.eco
-    require.register('deadmonton/src/templates/layout.js', function(exports, require, module) {
+    root.require.register('deadmonton/src/templates/layout.js', function(exports, require, module) {
     
       module.exports = function(__obj) {
         if (!__obj) __obj = {};
@@ -410,7 +410,7 @@
 
     
     // app.coffee
-    require.register('deadmonton/src/views/app.js', function(exports, require, module) {
+    root.require.register('deadmonton/src/views/app.js', function(exports, require, module) {
     
       var App, Canvas, Categories, Controls, View, mediator,
         __hasProp = {}.hasOwnProperty,
@@ -470,7 +470,7 @@
 
     
     // canvas.coffee
-    require.register('deadmonton/src/views/canvas.js', function(exports, require, module) {
+    root.require.register('deadmonton/src/views/canvas.js', function(exports, require, module) {
     
       var Canvas, View, config, mediator,
         __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
@@ -642,7 +642,7 @@
 
     
     // categories.coffee
-    require.register('deadmonton/src/views/categories.js', function(exports, require, module) {
+    root.require.register('deadmonton/src/views/categories.js', function(exports, require, module) {
     
       var Categories, Category, View, config,
         __hasProp = {}.hasOwnProperty,
@@ -690,7 +690,7 @@
 
     
     // category.coffee
-    require.register('deadmonton/src/views/category.js', function(exports, require, module) {
+    root.require.register('deadmonton/src/views/category.js', function(exports, require, module) {
     
       var Category, View, config, mediator, _ref,
         __hasProp = {}.hasOwnProperty,
@@ -745,7 +745,7 @@
 
     
     // controls.coffee
-    require.register('deadmonton/src/views/controls.js', function(exports, require, module) {
+    root.require.register('deadmonton/src/views/controls.js', function(exports, require, module) {
     
       var Controls, View, mediator,
         __hasProp = {}.hasOwnProperty,
@@ -821,7 +821,7 @@
   })();
 
   // Return the main app.
-  var main = require("deadmonton/src/views/app.js");
+  var main = root.require("deadmonton/src/views/app.js");
 
   // AMD/RequireJS.
   if (typeof define !== 'undefined' && define.amd) {
@@ -846,6 +846,6 @@
 
   // Alias our app.
   
-  require.alias("deadmonton/src/views/app.js", "deadmonton/index.js");
+  root.require.alias("deadmonton/src/views/app.js", "deadmonton/index.js");
   
 })();
