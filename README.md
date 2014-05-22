@@ -11,6 +11,3 @@ $ make fetch
 ```
 
 Then statically serve the `public/` folder and visit it in the browser. Happy house hunting!
-
-[![Bitdeli Badge](https://d2weczhvl823v0.cloudfront.net/radekstepan/deadmonton/trend.png)](https://bitdeli.com/free "Bitdeli Badge")
-
