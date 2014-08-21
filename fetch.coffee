@@ -24,15 +24,20 @@ async.waterfall [ (cb) ->
 
     crime ?= []
 
-    # The range of time in question.
+    # The range of time in question (60 days).
     b = do moment
-    a = b.clone().subtract(60, 'd')
+    a = b.clone().subtract('60', 'days')
 
     # Do we already have data?
     if (length = crime.length)
         # Start from the last day saved.
-        a    = moment crime[length - 1].t
+        a = moment crime[length - 1].t
+        
+        # But only last 90 days can be fetched from the server.
+        a = c if (c = b.clone().subtract('90', 'days')) > a
+
         last = do new Date(a).toJSON
+
         # Plop the data from the last day so we can easily merge.
         done = no
         while not done
@@ -67,13 +72,15 @@ async.waterfall [ (cb) ->
                 headers:
                     'Host': host
                     'Origin': "http://#{host}"
-                    'Referrer': "http://#{host}/"
+                    'Referer': "http://#{host}/"
                     'Content-Type': 'application/json; charset=UTF-8'
                     'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36
                         (KHTML, like Gecko) Ubuntu Chromium/28.0.1500.71
                         Chrome/28.0.1500.71 Safari/537.36'
             , (err, res) ->
                 throw err if err
+
+                throw res.body.Message or "Error #{res.statusCode}" if res.statusCode isnt 200
 
                 # Turn to an array.
                 all = []
@@ -95,7 +102,7 @@ async.waterfall [ (cb) ->
                 # Return.
                 cb null, all
 
-    # Throttle 5 at a time, don't want mounties to go all red alert.
+    # Throttle 5 neighbourhoods at a time.
     async.parallelLimit ( one(id, hood) for id, hood of hoods ), 5, (err, results) ->
         return cb err if err
 

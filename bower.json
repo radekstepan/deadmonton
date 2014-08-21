@@ -10,6 +10,7 @@
         "lzma-js": "https://raw.github.com/nmrugg/LZMA-JS/master/src/lzma_worker.js",
         "lodash": "2.3.0",
         "moment": "2.4.0",
-        "normalize-css": "2.1.3"
+        "normalize-css": "2.1.3",
+        "ractive": "~0.5.5"
     }
 }
