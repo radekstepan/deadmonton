@@ -1,25 +1,18 @@
-View     = require '../modules/view'
-config   = require '../config'
+config = require '../config'
+state  = require './state'
 
-Category = require './category'
+Categories = Ractive.extend
+    
+    template: require '../templates/categories'
 
-class Categories extends View
+    init: ->
+        @on 'toggle', (obj) ->
+            # Toggle our model.
+            @set "#{obj.keypath}.active", !obj.context.active
+            # Force redraw when pausing the animation.
+            state.set 'command', 'pause'
+    
+    data:
+        'category': config.categories
 
-    el: '#categories'
-
-    autorender: yes
-
-    constructor: ->
-        super
-
-    render: ->
-        # Render a list of categories as subviews.
-        for name, data of config.categories
-            @views.push view = new Category({
-                'model': _.extend data, { name }
-            })
-            $(@el).append view.el
-
-        @
-
-module.exports = Categories
+module.exports = new Categories()

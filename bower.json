@@ -3,7 +3,6 @@
     "version": "0.0.2",
     "dependencies": {
         "async": "0.2.5",
-        "backbone": "1.1.0",
         "jquery": "2.0.3",
         "leaflet-dist": "0.6.4",
         "leaflet-providers": "1.0.1",

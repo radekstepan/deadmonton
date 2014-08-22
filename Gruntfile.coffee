@@ -4,7 +4,7 @@ module.exports = (grunt) ->
         
         apps_c:
             commonjs:
-                src: [ 'src/**/*.{coffee,js,eco}' ]
+                src: [ 'src/**/*.{coffee,mustache}' ]
                 dest: 'build/app.js'
                 options:
                     main: 'src/views/app.coffee'
@@ -23,12 +23,12 @@ module.exports = (grunt) ->
                     # Vendor dependencies.
                     'vendor/jquery/jquery.js'
                     'vendor/lodash/dist/lodash.js'
-                    'vendor/backbone/backbone.js'
                     'vendor/leaflet-dist/leaflet.js'
                     'vendor/leaflet-providers/leaflet-providers.js'
                     'vendor/lzma-js/index.js'
                     'vendor/async/lib/async.js'
                     'vendor/moment/moment.js'
+                    'vendor/ractive/ractive.js'
                     # Our app.
                     'build/app.js'
                 ]

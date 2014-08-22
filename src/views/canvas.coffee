@@ -1,40 +1,22 @@
 config   = require '../config'
-View     = require '../modules/view'
-mediator = require '../modules/mediator'
+controls = require './controls'
+state    = require './state'
 
-class Canvas extends View
+Canvas = Ractive.extend
 
-    el: '#map'
+    init: ->
+        # Set/reset when we get data.
+        @on 'change', @reset
 
-    autorender: yes
+        # Update the canvas based on commands.
+        state.observe 'command', (newCmd, oldCmd) =>
+            return unless oldCmd
 
-    constructor: ->
-        super
+            switch newCmd
+                when 'pause', 'stop' then do @pause
+                when 'play' then do @play
+                when 'replay' then do @reset
 
-        # Set/reset.
-        do @reset
-
-        # Select the canvas context.
-        @ctx = document
-        .getElementById("canvas")
-        .getContext("2d")
-
-        # Blend the particles.
-        @ctx.globalCompositeOperation = 'darker'
-
-        # Set canvas size.
-        $('#canvas')
-        .attr('width', config.window.width)
-        .attr('height', config.window.height)
-
-        # Listeners.
-        mediator.on 'play', @play, @
-        mediator.on 'pause', @pause, @
-        mediator.on 'replay', @reset, @
-        mediator.on 'redraw', @redraw, @
-
-    # Center map over Edmonton.
-    render: ->
         # Set size of the div.
         $(@el)
         .css('width', "#{config.window.width}px")
@@ -55,7 +37,7 @@ class Canvas extends View
         # When the user starts moving with the map.
         @map.on 'movestart', =>
             # Pause the drawing.
-            mediator.trigger 'pause'
+            state.set 'command', 'pause'
 
             # Clear the frame.
             do @clear
@@ -72,6 +54,19 @@ class Canvas extends View
                 # Force a re-draw without reducing ttl.
                 @draw particle
 
+        # Select the canvas context.
+        @ctx = document
+        .getElementById("canvas")
+        .getContext("2d")
+
+        # Blend the particles.
+        @ctx.globalCompositeOperation = 'darker'
+
+        # Set canvas size.
+        $('#canvas')
+        .attr('width', config.window.width)
+        .attr('height', config.window.height)
+
     # Convert latitude/longitude to a canvas location.
     position: (latLng) ->
         @map.layerPointToContainerPoint @map.latLngToLayerPoint latLng
@@ -82,7 +77,7 @@ class Canvas extends View
         @ctx.clearRect 0, 0, config.window.width, config.window.height
 
     # Draw a single particle.
-    draw: (particle) =>
+    draw: (particle) ->
         { point, ttl } = particle
 
         # Skip if the location is off map.
@@ -113,9 +108,6 @@ class Canvas extends View
 
     # Play the show.
     play: ->
-        # We are active.
-        @playing = yes
-
         # Update this with new date.
         date = $('#date')
 
@@ -123,16 +115,18 @@ class Canvas extends View
         @i1 = setInterval =>
 
             # Have we reached the end?
-            return do @stop if @now > @end
+            return state.set('command', 'stop') if @now > @end
 
             # Show the new date.
             date.html @now.format("ddd, Do MMMM YYYY")
 
+            crime = @get 'crime'
+
             # Get today's events from today.
             go = yes
-            while go and @index < @collection.length
+            while go and @index < crime.length
                 # Peak.
-                if @now >= new Date (particle = @collection[@index]).t
+                if @now >= new Date (particle = crime[@index]).t
                     # How many ticks do I live for?
                     particle.ttl = 10
                     # Save the particle location.
@@ -165,41 +159,30 @@ class Canvas extends View
 
         , 33 # fps
 
-    # Clear the timeouts for a while.
+    # Clear the intervals & redraw (for when toggling categories).
     pause: ->
-        @playing = no
-        # Stop the show.
         _.each [ @i1, @i2 ], clearInterval
-
-    # Stop the show.
-    stop: ->
-        # Stop the show
-        do @pause
-        # Change controls.
-        mediator.trigger 'stop'
-
-    # Replay.
-    reset: ->
-        # Stop the show.
-        do @pause
-
-        # The time range.
-        @now = moment new Date @collection[0].t
-        @end = moment new Date @collection[@collection.length - 1].t
-        
-        # The particles.
-        @particles = []
-        # Index in the underlying collection.
-        @index = 0
-
-    # When we toggle a category.
-    redraw: ->
-        return if @playing
 
         # Clear the frame.
         do @clear
 
-        # Force re-draw.
-        _.each @particles, @draw
+        # Force re-draw in our context.
+        _.each @particles, @draw, @
 
-module.exports = Canvas
+    # Replay.
+    reset: ->
+        # Pause the show.
+        do @pause
+
+        crime = @get 'crime'
+
+        # The time range.
+        @now = moment new Date crime[0].t
+        @end = moment new Date crime[crime.length - 1].t
+        
+        # The particles.
+        @particles = []
+        # Index in the underlying crime collection.
+        @index = 0
+
+module.exports = new Canvas()

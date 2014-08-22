@@ -1,45 +1,33 @@
-View       = require '../modules/view'
-mediator   = require '../modules/mediator'
+state      = require './state'
+controls   = require './controls'
+canvas     = require './canvas'
+categories = require './categories'
 
-Controls   = require './controls'
-Categories = require './categories'
-Canvas     = require './canvas'
-
-class App extends View
-
-    el: 'body'
-
-    autorender: yes
-
+App = Ractive.extend
+    
     template: require '../templates/layout'
 
-    constructor: ->
-        super
-        @views = []
-
-        # Remove sign when done loading.
-        mediator.on 'loaded', ->
-            do $(@el).find('#loading').hide
-        , @
-
-        # Get the data.
-        $.get 'crime.json.lzma', (i) ->
-            # Decompress it.
-            LZMA.decompress i.split(','), (o) ->
-
-                collection = JSON.parse o
-                
-                # Render the canvas and say we are ready.
-                new Canvas({ collection })
-                mediator.trigger 'loaded'
-
-    render: ->
-        $(@el).html do @template
+    init: ->
+        # Remove loading sign when data loaded.
+        state.observe 'ready', (isReady) =>
+            do $(@el).find('#loading').hide if isReady
         
+        # Render the map.
+        canvas.render '#map'
+
         # Add map controls.
-        new Controls()
-        new Categories()
+        controls.render '#controls'
+        
+        # Add category controls.
+        categories.render '#categories'
 
-        @
+module.exports = app = new App()
 
-module.exports = App
+# Get the data now.
+$.get 'crime.json.lzma', (i) ->
+    # Decompress it.
+    LZMA.decompress i.split(','), (o) ->
+        # Set the new data on canvas.
+        canvas.set 'crime': JSON.parse o
+        # Say we are ready.
+        state.set 'ready', yes

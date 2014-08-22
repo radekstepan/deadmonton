@@ -1,4 +1,5 @@
-(function() {
+// A standalone CommonJS loader.
+(function(root) {
   /**
    * Require the given path.
    *
@@ -10,7 +11,7 @@
     var resolved = require.resolve(path);
 
     // lookup failed
-    if (null === resolved) {
+    if (!resolved) {
       orig = orig || path;
       parent = parent || 'root';
       var err = new Error('Failed to require "' + orig + '" from "' + parent + '"');
@@ -198,15 +199,15 @@
     return localRequire;
   };
 
-  // Global on server, window in browser.
-  var root = this;
-
   // Do we already have require loader?
   root.require = (typeof root.require !== 'undefined') ? root.require : require;
 
+})(this);
+// Concat modules and export them as an app.
+(function(root) {
+
   // All our modules will use global require.
   (function() {
-    
     
     // config.coffee
     root.require.register('deadmonton/src/config.js', function(exports, require, module) {
@@ -255,257 +256,95 @@
       
     });
 
+    // categories.mustache
+    root.require.register('deadmonton/src/templates/categories.js', function(exports, require, module) {
     
-    // mediator.coffee
-    root.require.register('deadmonton/src/modules/mediator.js', function(exports, require, module) {
-    
-      module.exports = _.extend({}, Backbone.Events);
-      
+      module.exports = ["{{ #category:name }}","<li class=\"{{ #active }}active{{ /active }}\" on-click=\"toggle\">","    <span class=\"circle\" style=\"background:rgb({{ rgb }})\"></span> {{ name }}","</li>","{{ /category }}"].join("\n");
     });
 
+    // controls.mustache
+    root.require.register('deadmonton/src/templates/controls.js', function(exports, require, module) {
     
-    // view.coffee
-    root.require.register('deadmonton/src/modules/view.js', function(exports, require, module) {
-    
-      var View,
-        __hasProp = {}.hasOwnProperty,
-        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-      
-      View = (function(_super) {
-        __extends(View, _super);
-      
-        View.prototype.autorender = false;
-      
-        function View() {
-          View.__super__.constructor.apply(this, arguments);
-          this.views = [];
-          if (this.autorender) {
-            this.render();
-          }
-        }
-      
-        View.prototype.render = function() {
-          return this;
-        };
-      
-        return View;
-      
-      })(Backbone.View);
-      
-      module.exports = View;
-      
+      module.exports = ["<span class=\"icon replay\" on-click='replay'></span>","<span class=\"icon play\" on-click='play'></span>","<span class=\"icon pause\" on-click='pause'></span>"].join("\n");
     });
 
-    
-    // category.eco
-    root.require.register('deadmonton/src/templates/category.js', function(exports, require, module) {
-    
-      module.exports = function(__obj) {
-        if (!__obj) __obj = {};
-        var __out = [], __capture = function(callback) {
-          var out = __out, result;
-          __out = [];
-          callback.call(this);
-          result = __out.join('');
-          __out = out;
-          return __safe(result);
-        }, __sanitize = function(value) {
-          if (value && value.ecoSafe) {
-            return value;
-          } else if (typeof value !== 'undefined' && value != null) {
-            return __escape(value);
-          } else {
-            return '';
-          }
-        }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
-        __safe = __obj.safe = function(value) {
-          if (value && value.ecoSafe) {
-            return value;
-          } else {
-            if (!(typeof value !== 'undefined' && value != null)) value = '';
-            var result = new String(value);
-            result.ecoSafe = true;
-            return result;
-          }
-        };
-        if (!__escape) {
-          __escape = __obj.escape = function(value) {
-            return ('' + value)
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;');
-          };
-        }
-        (function() {
-          (function() {
-            __out.push('<span class="circle" style="background:rgb(');
-          
-            __out.push(__sanitize(this.rgb));
-          
-            __out.push(')"></span> ');
-          
-            __out.push(__sanitize(this.name));
-          
-          }).call(this);
-          
-        }).call(__obj);
-        __obj.safe = __objSafe, __obj.escape = __escape;
-        return __out.join('');
-      }
-    });
-
-    
-    // layout.eco
+    // layout.mustache
     root.require.register('deadmonton/src/templates/layout.js', function(exports, require, module) {
     
-      module.exports = function(__obj) {
-        if (!__obj) __obj = {};
-        var __out = [], __capture = function(callback) {
-          var out = __out, result;
-          __out = [];
-          callback.call(this);
-          result = __out.join('');
-          __out = out;
-          return __safe(result);
-        }, __sanitize = function(value) {
-          if (value && value.ecoSafe) {
-            return value;
-          } else if (typeof value !== 'undefined' && value != null) {
-            return __escape(value);
-          } else {
-            return '';
-          }
-        }, __safe, __objSafe = __obj.safe, __escape = __obj.escape;
-        __safe = __obj.safe = function(value) {
-          if (value && value.ecoSafe) {
-            return value;
-          } else {
-            if (!(typeof value !== 'undefined' && value != null)) value = '';
-            var result = new String(value);
-            result.ecoSafe = true;
-            return result;
-          }
-        };
-        if (!__escape) {
-          __escape = __obj.escape = function(value) {
-            return ('' + value)
-              .replace(/&/g, '&amp;')
-              .replace(/</g, '&lt;')
-              .replace(/>/g, '&gt;')
-              .replace(/"/g, '&quot;');
-          };
-        }
-        (function() {
-          (function() {
-            __out.push('<div id="map"></div>\n<canvas id="canvas"></canvas>\n\n<div id="controls" class="box">\n    <span class="icon replay"></span>\n    <span class="icon play"></span>\n    <span class="icon pause"></span>\n</div>\n<div id="date" class="box"></div>\n<ul id="categories" class="box"></ul>\n\n<div id="loading" class="box">Loading &hellip;</div>');
-          
-          }).call(this);
-          
-        }).call(__obj);
-        __obj.safe = __objSafe, __obj.escape = __escape;
-        return __out.join('');
-      }
+      module.exports = ["<div id=\"map\"></div>","<canvas id=\"canvas\"></canvas>","","<div id=\"controls\" class=\"box\"></div>","<div id=\"date\" class=\"box\"></div>","<ul id=\"categories\" class=\"box\"></ul>","","<div id=\"loading\" class=\"box\">Loading &hellip;</div>"].join("\n");
     });
 
-    
     // app.coffee
     root.require.register('deadmonton/src/views/app.js', function(exports, require, module) {
     
-      var App, Canvas, Categories, Controls, View, mediator,
-        __hasProp = {}.hasOwnProperty,
-        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+      var App, app, canvas, categories, controls, state;
       
-      View = require('../modules/view');
+      state = require('./state');
       
-      mediator = require('../modules/mediator');
+      controls = require('./controls');
       
-      Controls = require('./controls');
+      canvas = require('./canvas');
       
-      Categories = require('./categories');
+      categories = require('./categories');
       
-      Canvas = require('./canvas');
-      
-      App = (function(_super) {
-        __extends(App, _super);
-      
-        App.prototype.el = 'body';
-      
-        App.prototype.autorender = true;
-      
-        App.prototype.template = require('../templates/layout');
-      
-        function App() {
-          App.__super__.constructor.apply(this, arguments);
-          this.views = [];
-          mediator.on('loaded', function() {
-            return $(this.el).find('#loading').hide();
-          }, this);
-          $.get('crime.json.lzma', function(i) {
-            return LZMA.decompress(i.split(','), function(o) {
-              var collection;
-              collection = JSON.parse(o);
-              new Canvas({
-                collection: collection
-              });
-              return mediator.trigger('loaded');
-            });
+      App = Ractive.extend({
+        template: require('../templates/layout'),
+        init: function() {
+          var _this = this;
+          state.observe('ready', function(isReady) {
+            if (isReady) {
+              return $(_this.el).find('#loading').hide();
+            }
           });
+          canvas.render('#map');
+          controls.render('#controls');
+          return categories.render('#categories');
         }
+      });
       
-        App.prototype.render = function() {
-          $(this.el).html(this.template());
-          new Controls();
-          new Categories();
-          return this;
-        };
+      module.exports = app = new App();
       
-        return App;
-      
-      })(View);
-      
-      module.exports = App;
+      $.get('crime.json.lzma', function(i) {
+        return LZMA.decompress(i.split(','), function(o) {
+          canvas.set({
+            'crime': JSON.parse(o)
+          });
+          return state.set('ready', true);
+        });
+      });
       
     });
 
-    
     // canvas.coffee
     root.require.register('deadmonton/src/views/canvas.js', function(exports, require, module) {
     
-      var Canvas, View, config, mediator,
-        __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
-        __hasProp = {}.hasOwnProperty,
-        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+      var Canvas, config, controls, state;
       
       config = require('../config');
       
-      View = require('../modules/view');
+      controls = require('./controls');
       
-      mediator = require('../modules/mediator');
+      state = require('./state');
       
-      Canvas = (function(_super) {
-        __extends(Canvas, _super);
-      
-        Canvas.prototype.el = '#map';
-      
-        Canvas.prototype.autorender = true;
-      
-        function Canvas() {
-          this.draw = __bind(this.draw, this);
-          Canvas.__super__.constructor.apply(this, arguments);
-          this.reset();
-          this.ctx = document.getElementById("canvas").getContext("2d");
-          this.ctx.globalCompositeOperation = 'darker';
-          $('#canvas').attr('width', config.window.width).attr('height', config.window.height);
-          mediator.on('play', this.play, this);
-          mediator.on('pause', this.pause, this);
-          mediator.on('replay', this.reset, this);
-          mediator.on('redraw', this.redraw, this);
-        }
-      
-        Canvas.prototype.render = function() {
+      Canvas = Ractive.extend({
+        init: function() {
           var a, b, _ref,
             _this = this;
+          this.on('change', this.reset);
+          state.observe('command', function(newCmd, oldCmd) {
+            if (!oldCmd) {
+              return;
+            }
+            switch (newCmd) {
+              case 'pause':
+              case 'stop':
+                return _this.pause();
+              case 'play':
+                return _this.play();
+              case 'replay':
+                return _this.reset();
+            }
+          });
           $(this.el).css('width', "" + config.window.width + "px").css('height', "" + config.window.height + "px");
           _ref = config.center, a = _ref[0], b = _ref[1];
           this.map = new L.Map('map', {
@@ -515,10 +354,10 @@
           });
           L.tileLayer.provider('Stamen.Toner').addTo(this.map);
           this.map.on('movestart', function() {
-            mediator.trigger('pause');
+            state.set('command', 'pause');
             return _this.clear();
           });
-          return this.map.on('moveend', function() {
+          this.map.on('moveend', function() {
             var particle, _i, _len, _ref1, _results;
             if (!_this.particles.length) {
               return;
@@ -532,17 +371,17 @@
             }
             return _results;
           });
-        };
-      
-        Canvas.prototype.position = function(latLng) {
+          this.ctx = document.getElementById("canvas").getContext("2d");
+          this.ctx.globalCompositeOperation = 'darker';
+          return $('#canvas').attr('width', config.window.width).attr('height', config.window.height);
+        },
+        position: function(latLng) {
           return this.map.layerPointToContainerPoint(this.map.latLngToLayerPoint(latLng));
-        };
-      
-        Canvas.prototype.clear = function() {
+        },
+        clear: function() {
           return this.ctx.clearRect(0, 0, config.window.width, config.window.height);
-        };
-      
-        Canvas.prototype.draw = function(particle) {
+        },
+        draw: function(particle) {
           var gradient, point, radius, ttl;
           point = particle.point, ttl = particle.ttl;
           if (point.x < 0 || point.y < 0) {
@@ -561,22 +400,21 @@
           this.ctx.arc(point.x, point.y, radius, 0, Math.PI * 2, false);
           this.ctx.closePath();
           return this.ctx.fill();
-        };
-      
-        Canvas.prototype.play = function() {
+        },
+        play: function() {
           var date,
             _this = this;
-          this.playing = true;
           date = $('#date');
           this.i1 = setInterval(function() {
-            var go, particle;
+            var crime, go, particle;
             if (_this.now > _this.end) {
-              return _this.stop();
+              return state.set('command', 'stop');
             }
             date.html(_this.now.format("ddd, Do MMMM YYYY"));
+            crime = _this.get('crime');
             go = true;
-            while (go && _this.index < _this.collection.length) {
-              if (_this.now >= new Date((particle = _this.collection[_this.index]).t)) {
+            while (go && _this.index < crime.length) {
+              if (_this.now >= new Date((particle = crime[_this.index]).t)) {
                 particle.ttl = 10;
                 particle.point = _this.position(particle.l);
                 particle.color = config.categories[particle.c].rgb.join(',');
@@ -604,218 +442,133 @@
             }
             return _results;
           }, 33);
-        };
-      
-        Canvas.prototype.pause = function() {
-          this.playing = false;
-          return _.each([this.i1, this.i2], clearInterval);
-        };
-      
-        Canvas.prototype.stop = function() {
+        },
+        pause: function() {
+          _.each([this.i1, this.i2], clearInterval);
+          this.clear();
+          return _.each(this.particles, this.draw, this);
+        },
+        reset: function() {
+          var crime;
           this.pause();
-          return mediator.trigger('stop');
-        };
-      
-        Canvas.prototype.reset = function() {
-          this.pause();
-          this.now = moment(new Date(this.collection[0].t));
-          this.end = moment(new Date(this.collection[this.collection.length - 1].t));
+          crime = this.get('crime');
+          this.now = moment(new Date(crime[0].t));
+          this.end = moment(new Date(crime[crime.length - 1].t));
           this.particles = [];
           return this.index = 0;
-        };
+        }
+      });
       
-        Canvas.prototype.redraw = function() {
-          if (this.playing) {
-            return;
-          }
-          this.clear();
-          return _.each(this.particles, this.draw);
-        };
-      
-        return Canvas;
-      
-      })(View);
-      
-      module.exports = Canvas;
+      module.exports = new Canvas();
       
     });
 
-    
     // categories.coffee
     root.require.register('deadmonton/src/views/categories.js', function(exports, require, module) {
     
-      var Categories, Category, View, config,
-        __hasProp = {}.hasOwnProperty,
-        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-      
-      View = require('../modules/view');
+      var Categories, config, state;
       
       config = require('../config');
       
-      Category = require('./category');
+      state = require('./state');
       
-      Categories = (function(_super) {
-        __extends(Categories, _super);
-      
-        Categories.prototype.el = '#categories';
-      
-        Categories.prototype.autorender = true;
-      
-        function Categories() {
-          Categories.__super__.constructor.apply(this, arguments);
+      Categories = Ractive.extend({
+        template: require('../templates/categories'),
+        init: function() {
+          return this.on('toggle', function(obj) {
+            this.set("" + obj.keypath + ".active", !obj.context.active);
+            return state.set('command', 'pause');
+          });
+        },
+        data: {
+          'category': config.categories
         }
+      });
       
-        Categories.prototype.render = function() {
-          var data, name, view, _ref;
-          _ref = config.categories;
-          for (name in _ref) {
-            data = _ref[name];
-            this.views.push(view = new Category({
-              'model': _.extend(data, {
-                name: name
-              })
-            }));
-            $(this.el).append(view.el);
-          }
-          return this;
-        };
-      
-        return Categories;
-      
-      })(View);
-      
-      module.exports = Categories;
+      module.exports = new Categories();
       
     });
 
-    
-    // category.coffee
-    root.require.register('deadmonton/src/views/category.js', function(exports, require, module) {
-    
-      var Category, View, config, mediator, _ref,
-        __hasProp = {}.hasOwnProperty,
-        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
-      
-      View = require('../modules/view');
-      
-      mediator = require('../modules/mediator');
-      
-      config = require('../config');
-      
-      Category = (function(_super) {
-        __extends(Category, _super);
-      
-        function Category() {
-          _ref = Category.__super__.constructor.apply(this, arguments);
-          return _ref;
-        }
-      
-        Category.prototype.autorender = true;
-      
-        Category.prototype.tagName = 'li';
-      
-        Category.prototype.template = require('../templates/category');
-      
-        Category.prototype.events = {
-          'click': 'onToggle'
-        };
-      
-        Category.prototype.render = function() {
-          var el;
-          (el = $(this.el)).html(this.template(this.model));
-          if (this.model.active) {
-            el.addClass('active');
-          }
-          return this;
-        };
-      
-        Category.prototype.onToggle = function() {
-          $(this.el).toggleClass('active');
-          this.model.active = !this.model.active;
-          return mediator.trigger('redraw');
-        };
-      
-        return Category;
-      
-      })(View);
-      
-      module.exports = Category;
-      
-    });
-
-    
     // controls.coffee
     root.require.register('deadmonton/src/views/controls.js', function(exports, require, module) {
     
-      var Controls, View, mediator,
-        __hasProp = {}.hasOwnProperty,
-        __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+      var Controls, canvas, state;
       
-      View = require('../modules/view');
+      canvas = require('./canvas');
       
-      mediator = require('../modules/mediator');
+      state = require('./state');
       
-      Controls = (function(_super) {
-        __extends(Controls, _super);
-      
-        Controls.prototype.el = '#controls';
-      
-        Controls.prototype.autorender = true;
-      
-        Controls.prototype.events = {
-          'click .icon.play.active': 'onPlay',
-          'click .icon.pause.active': 'onPlay',
-          'click .icon.replay.active': 'onReplay'
-        };
-      
-        Controls.prototype.playing = false;
-      
-        function Controls() {
-          Controls.__super__.constructor.apply(this, arguments);
-          mediator.on('loaded', this.onReady, this);
-          mediator.on('stop', this.onStop, this);
-          mediator.on('pause', this.onPause, this);
-        }
-      
-        Controls.prototype.onPlay = function(evt) {
+      Controls = Ractive.extend({
+        template: require('../templates/controls'),
+        init: function() {
+          var _this = this;
+          this.on('play', this.onPlay);
+          this.on('pause', this.onPlay);
+          this.on('replay', this.onReplay);
+          state.observe('ready', function(isReady) {
+            if (isReady) {
+              return _this.onReady();
+            }
+          });
+          return state.observe('command', function(newCmd, oldCmd) {
+            if (!oldCmd) {
+              return;
+            }
+            switch (newCmd) {
+              case 'stop':
+                return _this.onStop();
+              case 'pause':
+                return _this.onPause();
+            }
+          });
+        },
+        onPlay: function() {
           $(this.el).find('.play, .pause').toggleClass('active');
-          this.playing = !this.playing;
           $(this.el).find('.replay').addClass('active');
-          return mediator.trigger(['pause', 'play'][+this.playing]);
-        };
-      
-        Controls.prototype.onReplay = function(evt) {
-          this.playing = true;
+          return state.set('command', ['play', 'pause'][+state.get('playing')]);
+        },
+        onReplay: function() {
           $(this.el).find('.play').removeClass('active');
           $(this.el).find('.pause').addClass('active');
-          mediator.trigger('replay');
-          return mediator.trigger('play');
-        };
-      
-        Controls.prototype.onReady = function() {
+          state.set('command', 'replay');
+          return state.set('command', 'play');
+        },
+        onReady: function() {
           return $(this.el).find('.icon.play').addClass('active');
-        };
-      
-        Controls.prototype.onStop = function() {
-          this.playing = false;
+        },
+        onStop: function() {
           $(this.el).find('.icon.play, .icon.pause').removeClass('active');
           return $(this.el).find('.icon.replay').addClass('active');
-        };
-      
-        Controls.prototype.onPause = function() {
-          if (!this.playing) {
-            return;
-          }
-          this.playing = false;
+        },
+        onPause: function() {
           $(this.el).find('.icon.play').addClass('active');
           return $(this.el).find('.icon.pause').removeClass('active');
-        };
+        }
+      });
       
-        return Controls;
+      module.exports = new Controls();
       
-      })(View);
+    });
+
+    // state.coffee
+    root.require.register('deadmonton/src/views/state.js', function(exports, require, module) {
+    
+      var state;
       
-      module.exports = Controls;
+      module.exports = state = new Ractive({
+        data: {
+          command: 'stop',
+          playing: false,
+          ready: false
+        }
+      });
+      
+      state.observe('command', function(cmd) {
+        this.set('playing', cmd === 'play');
+        if (cmd === 'pause') {
+          return this.set('command', 'n/a');
+        }
+      });
       
     });
   })();
@@ -848,4 +601,5 @@
   
   root.require.alias("deadmonton/src/views/app.js", "deadmonton/index.js");
   
-})();
+
+})(this);

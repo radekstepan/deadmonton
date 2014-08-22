@@ -1,59 +1,51 @@
-View     = require '../modules/view'
-mediator = require '../modules/mediator'
+canvas = require './canvas'
+state  = require './state'
 
-class Controls extends View
+Controls = Ractive.extend
+    
+    template: require '../templates/controls'
 
-    el: '#controls'
+    init: ->
+        # Mouse (DOM) events.
+        @on 'play', @onPlay
+        @on 'pause', @onPlay
+        @on 'replay', @onReplay
 
-    autorender: yes
+        # Enable play button when data is loaded.
+        state.observe 'ready', (isReady) =>
+            do @onReady if isReady
 
-    # Mouse clicks.
-    events:
-        'click .icon.play.active': 'onPlay'
-        'click .icon.pause.active': 'onPlay'
-        'click .icon.replay.active': 'onReplay'
-
-    # We do not autostart.
-    playing: no
-
-    constructor: ->
-        super
-
-        # Enable play button when loaded.
-        mediator.on 'loaded', @onReady, @
-
-        # No moar data.
-        mediator.on 'stop', @onStop, @
-
-        # When we pan/zoom the map.
-        mediator.on 'pause', @onPause, @
+        # Observe the commands.
+        state.observe 'command', (newCmd, oldCmd) =>
+            return unless oldCmd # initial set fires too
+            # Which one?
+            switch newCmd
+                # No moar data.
+                when 'stop' then do @onStop
+                # When we pan/zoom the map.
+                when 'pause' then do @onPause
 
     # Clicking the play/pause button.
-    onPlay: (evt) ->
+    onPlay: ->
         # Toggle buttons.
         $(@el).find('.play, .pause').toggleClass('active')
-        # Toggle state.
-        @playing = !@playing
 
         # We can rewind now as we have most def moved in time.
         $(@el).find('.replay').addClass('active')
 
         # Trigger the appropriate event.
-        mediator.trigger [ 'pause', 'play' ][+@playing]
+        state.set 'command', [ 'play', 'pause' ][+state.get('playing')]
 
     # Starting all over again.
-    onReplay: (evt) ->
-        # Definitely playing.
-        @playing = yes
-
+    onReplay: ->
         # The initial state.
         $(@el).find('.play').removeClass('active')
         $(@el).find('.pause').addClass('active')
 
         # Reset the data.
-        mediator.trigger 'replay'
+        state.set 'command', 'replay'
         # Play them again.
-        mediator.trigger 'play'
+        state.set 'command', 'play'
 
     # Enable play button when data has loaded.
     onReady: ->
@@ -61,21 +53,13 @@ class Controls extends View
 
     # When we run out of data to show.
     onStop: ->
-        # Not playing.
-        @playing = no
-
         # The end state, only play is active.
         $(@el).find('.icon.play, .icon.pause').removeClass('active')
         $(@el).find('.icon.replay').addClass('active')
 
-    # We have pause through no fault of out own.
+    # We have paused through no fault of our own.
     onPause: ->
-        return unless @playing
-        
-        # Not playing.
-        @playing = no
-        
         $(@el).find('.icon.play').addClass('active') 
-        $(@el).find('.icon.pause').removeClass('active') 
+        $(@el).find('.icon.pause').removeClass('active')
 
-module.exports = Controls
+module.exports = new Controls()
