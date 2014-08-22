@@ -25,6 +25,7 @@ module.exports = (grunt) ->
                     'vendor/lodash/dist/lodash.js'
                     'vendor/leaflet-dist/leaflet.js'
                     'vendor/leaflet-providers/leaflet-providers.js'
+                    'vendor/leaflet-heat/index.js'
                     'vendor/lzma-js/index.js'
                     'vendor/async/lib/async.js'
                     'vendor/moment/moment.js'

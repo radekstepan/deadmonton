@@ -216,35 +216,43 @@
         'categories': {
           'Theft From Vehicle': {
             'rgb': [255, 237, 160],
-            'active': true
+            'active': true,
+            'seriousness': 1
           },
           'Theft Of Vehicle': {
             'rgb': [254, 217, 118],
-            'active': true
+            'active': true,
+            'seriousness': 2
           },
           'Theft Over $5000': {
             'rgb': [254, 217, 118],
-            'active': true
+            'active': true,
+            'seriousness': 2
           },
           'Break and Enter': {
             'rgb': [253, 141, 60],
-            'active': true
+            'active': true,
+            'seriousness': 4
           },
           'Robbery': {
             'rgb': [253, 141, 60],
-            'active': true
+            'active': true,
+            'seriousness': 6
           },
           'Assault': {
             'rgb': [227, 26, 28],
-            'active': true
+            'active': true,
+            'seriousness': 8
           },
           'Sexual Assaults': {
             'rgb': [227, 26, 28],
-            'active': true
+            'active': true,
+            'seriousness': 10
           },
           'Homicide': {
             'rgb': [0, 0, 0],
-            'active': true
+            'active': true,
+            'seriousness': 50
           }
         },
         'window': {
@@ -371,6 +379,11 @@
             }
             return _results;
           });
+          this.heat = L.heatLayer([], {
+            'maxZoom': 16,
+            'radius': 10,
+            'blur': 15
+          }).addTo(this.map);
           this.ctx = document.getElementById("canvas").getContext("2d");
           this.ctx.globalCompositeOperation = 'darker';
           return $('#canvas').attr('width', config.window.width).attr('height', config.window.height);
@@ -383,6 +396,7 @@
         },
         draw: function(particle) {
           var gradient, point, radius, ttl;
+          return;
           point = particle.point, ttl = particle.ttl;
           if (point.x < 0 || point.y < 0) {
             return;
@@ -406,7 +420,7 @@
             _this = this;
           date = $('#date');
           this.i1 = setInterval(function() {
-            var crime, go, particle;
+            var active, crime, go, particle, rgb, seriousness, _ref;
             if (_this.now > _this.end) {
               return state.set('command', 'stop');
             }
@@ -415,11 +429,15 @@
             go = true;
             while (go && _this.index < crime.length) {
               if (_this.now >= new Date((particle = crime[_this.index]).t)) {
+                _ref = config.categories[particle.c], rgb = _ref.rgb, seriousness = _ref.seriousness, active = _ref.active;
                 particle.ttl = 10;
                 particle.point = _this.position(particle.l);
-                particle.color = config.categories[particle.c].rgb.join(',');
+                particle.color = rgb.join(',');
                 _this.particles.push(particle);
                 _this.index += 1;
+                if (active) {
+                  _this.heat.addLatLng(particle.l.concat([seriousness * 20]));
+                }
               } else {
                 go = false;
               }

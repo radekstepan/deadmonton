@@ -4,8 +4,9 @@
     "dependencies": {
         "async": "0.2.5",
         "jquery": "2.0.3",
-        "leaflet-dist": "0.6.4",
+        "leaflet-dist": "0.7.0",
         "leaflet-providers": "1.0.1",
+        "leaflet-heat": "https://raw.githubusercontent.com/Leaflet/Leaflet.heat/gh-pages/dist/leaflet-heat.js",
         "lzma-js": "https://raw.github.com/nmrugg/LZMA-JS/master/src/lzma_worker.js",
         "lodash": "2.3.0",
         "moment": "2.4.0",

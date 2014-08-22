@@ -54,6 +54,13 @@ Canvas = Ractive.extend
                 # Force a re-draw without reducing ttl.
                 @draw particle
 
+        # Add heatmap layer.
+        @heat = L.heatLayer([],
+            'maxZoom': 16
+            'radius': 10
+            'blur': 15
+        ).addTo(@map)
+
         # Select the canvas context.
         @ctx = document
         .getElementById("canvas")
@@ -78,6 +85,8 @@ Canvas = Ractive.extend
 
     # Draw a single particle.
     draw: (particle) ->
+        return
+
         { point, ttl } = particle
 
         # Skip if the location is off map.
@@ -127,16 +136,20 @@ Canvas = Ractive.extend
             while go and @index < crime.length
                 # Peak.
                 if @now >= new Date (particle = crime[@index]).t
+                    # Get our config.
+                    { rgb, seriousness, active } = config.categories[particle.c]
                     # How many ticks do I live for?
                     particle.ttl = 10
                     # Save the particle location.
                     particle.point = @position particle.l
                     # The color?
-                    particle.color = config.categories[particle.c].rgb.join(',')
+                    particle.color = rgb.join(',')
                     # Add to the stack.
                     @particles.push particle
                     # Move index.
                     @index += 1
+                    # Add point to heatmap if our category is active.
+                    @heat.addLatLng particle.l.concat [ seriousness * 20 ] if active
                 else
                     go = no
 
