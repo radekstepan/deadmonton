@@ -85,7 +85,7 @@ Canvas = Ractive.extend
 
     # Draw a single particle.
     draw: (particle) ->
-        return
+        return # switch off particle drawing for now
 
         { point, ttl } = particle
 
@@ -139,17 +139,17 @@ Canvas = Ractive.extend
                     # Get our config.
                     { rgb, seriousness, active } = config.categories[particle.c]
                     # How many ticks do I live for?
-                    particle.ttl = 10
+                    particle.ttl = 20 # how long can we "remember" this crime?
                     # Save the particle location.
                     particle.point = @position particle.l
                     # The color?
                     particle.color = rgb.join(',')
+                    # Why so serious?
+                    particle.seriousness = seriousness
                     # Add to the stack.
                     @particles.push particle
                     # Move index.
                     @index += 1
-                    # Add point to heatmap if our category is active.
-                    @heat.addLatLng particle.l.concat [ seriousness * 20 ] if active
                 else
                     go = no
 
@@ -164,11 +164,15 @@ Canvas = Ractive.extend
             # Clear the frame.
             do @clear
 
+            # Render our heatmap.
+            @heat.setLatLngs do => # inefficient, switch to heatmap fully
+                ( p.l.concat [ p.seriousness * p.ttl * 20 ] for p in @particles when p.ttl isnt 0 )
+
             # Draw all particles and reduce their ttl.
             for particle in @particles
                 @draw particle
                 # One tick less.
-                particle.ttl -= 0.1 if particle.ttl > 3
+                particle.ttl -= 0.1 if particle.ttl > 0
 
         , 33 # fps
 

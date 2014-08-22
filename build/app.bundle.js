@@ -36705,14 +36705,12 @@ this.LZMA_WORKER = LZMA;
             while (go && _this.index < crime.length) {
               if (_this.now >= new Date((particle = crime[_this.index]).t)) {
                 _ref = config.categories[particle.c], rgb = _ref.rgb, seriousness = _ref.seriousness, active = _ref.active;
-                particle.ttl = 10;
+                particle.ttl = 20;
                 particle.point = _this.position(particle.l);
                 particle.color = rgb.join(',');
+                particle.seriousness = seriousness;
                 _this.particles.push(particle);
                 _this.index += 1;
-                if (active) {
-                  _this.heat.addLatLng(particle.l.concat([seriousness * 20]));
-                }
               } else {
                 go = false;
               }
@@ -36722,12 +36720,24 @@ this.LZMA_WORKER = LZMA;
           return this.i2 = setInterval(function() {
             var particle, _i, _len, _ref, _results;
             _this.clear();
+            _this.heat.setLatLngs((function() {
+              var p, _i, _len, _ref, _results;
+              _ref = _this.particles;
+              _results = [];
+              for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+                p = _ref[_i];
+                if (p.ttl !== 0) {
+                  _results.push(p.l.concat([p.seriousness * p.ttl * 20]));
+                }
+              }
+              return _results;
+            })());
             _ref = _this.particles;
             _results = [];
             for (_i = 0, _len = _ref.length; _i < _len; _i++) {
               particle = _ref[_i];
               _this.draw(particle);
-              if (particle.ttl > 3) {
+              if (particle.ttl > 0) {
                 _results.push(particle.ttl -= 0.1);
               } else {
                 _results.push(void 0);
